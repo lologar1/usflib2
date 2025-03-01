@@ -1,6 +1,6 @@
 #include "usfio.h"
 
-char **usf_ftot(char * file, char *options, uint64_t *l) {
+char **usf_ftot(char *file, char *options, uint64_t *l) {
 	FILE *f = fopen(file, options);
 
 	usf_dynarr *text;

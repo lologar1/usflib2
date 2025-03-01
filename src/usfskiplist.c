@@ -79,13 +79,17 @@ usf_data usf_skget(usf_skiplist *skiplist, uint64_t i) {
 	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
 		next = node -> nextnodes[j];
 
-		while (next != NULL && next -> index <= i) {
+		while (next && next -> index <= i) {
+			/* Loop unrolling: two iterations per while cycle */
+			node = next;
+			if ((next = node -> nextnodes[j]) == NULL || next -> index > i) break;
+
 			node = next;
 			next = node -> nextnodes[j];
 		}
 	}
 
-	if (node -> index != i) return (usf_data) { .p = NULL };
+	if (node -> index != i) return USFNULL;
 
 	return node -> data;
 }
@@ -99,7 +103,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, uint64_t i) {
 		/* Cannot delete 0, although setting to 0 has
 		virtually the same effect */
 		v = usf_skget(skiplist, 0);
-		usf_skset(skiplist, 0, (usf_data) { .p = NULL });
+		usf_skset(skiplist, 0, USFNULL);
 		return v;
 	}
 
