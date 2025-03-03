@@ -25,6 +25,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
 
 		//Set base data
 		node -> index = 0;
+		node -> data = USFNULL;
 
 		skiplist -> head = node;
 	}
@@ -35,7 +36,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
 	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
 		next = node -> nextnodes[j];
 
-		while (next != NULL && next -> index <= i) {
+		while (next && next -> index <= i) {
 			node = next;
 			next = node -> nextnodes[j];
 		}
@@ -56,7 +57,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
 	node -> data = data;
 
 	for (j = 1; j < USF_SKIPLIST_HEADSIZE; j++)
-		if (rand() > RAND_MAX/2) break; //Probabilistic upkeep
+		if (rand() & 1) break; //Probabilistic upkeep
 
 	ptrs = malloc(sizeof(usf_skipnode *) * j);
 
@@ -87,6 +88,8 @@ usf_data usf_skget(usf_skiplist *skiplist, uint64_t i) {
 			node = next;
 			next = node -> nextnodes[j];
 		}
+
+		if (node -> index == i) break;
 	}
 
 	if (node -> index != i) return USFNULL;
@@ -112,7 +115,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, uint64_t i) {
 	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
 		next = node -> nextnodes[j];
 
-		while (next != NULL && next -> index < i) {
+		while (next && next -> index < i) {
 			node = next;
 			next = node -> nextnodes[j];
 		}
@@ -126,7 +129,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, uint64_t i) {
 	node = next;
 
 	//Did not find
-	if (node == NULL || node -> index != i) return (usf_data) { .p = NULL };
+	if (node == NULL || node -> index != i) return USFNULL;
 
 	v = node -> data; //Get data
 
