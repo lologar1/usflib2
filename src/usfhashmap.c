@@ -279,7 +279,9 @@ void usf_freestrhm(usf_hashmap *hashmap) {
 		entry = array[i];
 		if (entry == NULL) continue; //Uninitialized
 
-		free(entry[0].p); //Free key pointer
+		if (entry[0].p)
+			free(entry[0].p); //Free key pointer
+
 		free(entry); //Free key:val pair
 	}
 

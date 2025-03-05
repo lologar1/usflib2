@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define USF_HASHMAP_DEFAULTSIZE 16 /* Prime to avoid collisions, or so I'm told */
+#define USF_HASHMAP_DEFAULTSIZE 16
 #define USF_HASHMAP_RESIZE_MULTIPLIER 2
 
 uint64_t usf_strhash(const char *);

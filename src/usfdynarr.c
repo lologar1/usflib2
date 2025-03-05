@@ -1,20 +1,36 @@
 #include "usfdynarr.h"
 
-usf_dynarr *usf_arrtodyn(usf_data *arr, uint64_t size) {
+usf_dynarr *usf_newda(uint64_t size) {
 	usf_dynarr *da = malloc(sizeof(usf_dynarr));
 	usf_data *array = malloc(sizeof(usf_data) * size);
 
 	if (da == NULL || array == NULL) return NULL;
+
+	da -> array = array;
+	da -> size = da -> capacity = size;
+
+	return da;
+}
+
+usf_dynarr *usf_arrtodyn(usf_data *arr, uint64_t size) {
+	usf_dynarr *da;
+	usf_data *array;
+
+	da = usf_newda(size);
+	if (da == NULL) return NULL;
+
+	array = da -> array;
 
 	if (arr) {
 		memcpy(array, arr, size); //Copy to array
 		free(arr); //Free if non null (can be used as constructor)
 	}
 
-	da -> array = array;
-	da -> size = da -> capacity = size;
-
 	return da;
+}
+
+usf_data usf_daappend(usf_dynarr *da, usf_data data) {
+	return usf_daset(da, da -> size, data);
 }
 
 usf_data usf_daget(usf_dynarr *da, uint64_t index) {
@@ -24,12 +40,13 @@ usf_data usf_daget(usf_dynarr *da, uint64_t index) {
 
 usf_data usf_daset(usf_dynarr *da, uint64_t index, usf_data data) {
 	uint64_t newsize;
+
 	if (da == NULL) return USFNULL;
 
-	//Resize
-	newsize = index * 2 + 1; //Prevent 0 error
-
 	if (da -> capacity <= index) {
+		//Resize
+		newsize = index * 2 + 1; //Prevent 0 error
+
 		da -> array = realloc(da -> array, sizeof(usf_data) * newsize);
 		da -> capacity = newsize;
 	}
