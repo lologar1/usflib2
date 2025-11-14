@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <time.h>
 
+#define MAX_TEST_SIZE 1000000
+
 double test(uint64_t);
 
 int main() {
@@ -10,8 +12,8 @@ int main() {
 
 	srand(time(NULL));
 
-	printf("skptest: Time taken per middle element access in function of size\n");
-	for (i = 2; i < 100000; i *= 2) {
+	printf("skptest: Time (ns) taken per middle element access in function of size (8 samples)\n");
+	for (i = 2; i < MAX_TEST_SIZE; i *= 2) {
 		avg = 0;
 
 		for (j = 0; j < 8; j++) {
@@ -32,7 +34,7 @@ double test(uint64_t cycles) {
 	struct timespec start, end;
 
 	usf_skiplist *skp;
-	skp = usf_skset(NULL, 0, USFNULL);
+	skp = usf_newsk();
 
 	for (i = 0; i < cycles; i++) {
 		usf_skset(skp, i, USFDATAU(i));

@@ -8,11 +8,11 @@ void usf_printtxt(char **text, uint64_t len, FILE *stream) {
 		fprintf(stream, "%s", text[i]);
 }
 
-char *usf_ftos(char *file, char *options, uint64_t *l) {
-	/* Reads a file file with options options and returns contents
-	 * as a single 0-terminated string, with length in l, NULL if an error occured */
+char *usf_ftos(char *file, uint64_t *l) {
+	/* Reads a file file and returns contents as a single 0-terminated string,
+	 * with length in l, NULL if an error occured */
 
-	FILE *f = fopen(file, options);
+	FILE *f = fopen(file, "r");
 	if (f == NULL) return NULL;
 
 	if (fseek(f, 0, SEEK_END) != 0) {
@@ -44,13 +44,13 @@ char *usf_ftos(char *file, char *options, uint64_t *l) {
 	return str;
 }
 
-char **usf_ftot(char *file, char *options, uint64_t *l) {
-	/* Reads a file with given options and and returns a 2D array of pointers to lines (incl. \n */
+char **usf_ftot(char *file, uint64_t *l) {
+	/* Reads a file and returns a 2D array of pointers to lines (incl. \n */
 
 	char *filestring;
 	uint64_t fslen;
 
-	if ((filestring = usf_ftos(file, options, &fslen)) == NULL)
+	if ((filestring = usf_ftos(file, &fslen)) == NULL)
 		return NULL;
 
 	uint64_t nlines;
@@ -87,4 +87,42 @@ void usf_freetxt(char **text, uint64_t nlines) {
 	for (i = 0; i < nlines; i++)
 		free(text[i]);
 	free(text);
+}
+
+size_t usf_btof(char *file, void *pointer, size_t size) {
+	/* Dumps size bytes from pointer into binary file file, returning the number of bytes successfully written */
+	FILE *f;
+	size_t written;
+
+	f = fopen(file, "wb");
+	written = fwrite(pointer, 1, size, f);
+	fclose(f);
+
+	return written;
+}
+
+void *usf_ftob(char *file, size_t *size) {
+	/* Reads a binary file and returns a pointer to its data, with size (in bytes) written to size */
+	FILE *f;
+	void *array;
+	size_t sz;
+
+	if ((f = fopen(file, "rb")) == NULL) return NULL;
+
+	/* Query file size in bytes */
+	fseek(f, 0, SEEK_END);
+	sz = ftell(f);
+	fseek(f, 0, SEEK_SET);
+
+	array = malloc(sz);
+	if (fread(array, 1, sz, f) != sz) {
+		/* Did not read as many bytes as size : error occured */
+		free(array);
+		fclose(f);
+		return NULL;
+	}
+	*size = sz;
+	fclose(f);
+
+	return array;
 }

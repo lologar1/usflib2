@@ -145,3 +145,43 @@ char **usf_scsplit(char *str, char sep, uint64_t *count) {
 
 	return substrings;
 }
+
+int usf_strcat(char *destination, size_t size, unsigned int n, ...) {
+	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
+	size_t catsize = 0;
+
+	va_list sizecheck, args;
+	va_start(args, n);
+	va_copy(sizecheck, args);
+
+	unsigned int i;
+	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
+	va_end(sizecheck);
+
+	if (++catsize > size) return 0; /* Include 0 terminator */
+
+	strcpy(destination, va_arg(args, char *));
+	for (i = 1; i < n; i++) strcat(destination, va_arg(args, char *));
+	va_end(args);
+
+	return 1;
+}
+
+int usf_vstrcat(char *destination, size_t size, unsigned int n, va_list args) {
+	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
+	size_t catsize = 0;
+
+	va_list sizecheck;
+	va_copy(sizecheck, args);
+
+	unsigned int i;
+	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
+	va_end(sizecheck);
+
+	if (++catsize > size) return 0; /* Include 0 terminator */
+
+	strcpy(destination, va_arg(args, char *));
+	for (i = 1; i < n; i++) strcat(destination, va_arg(args, char *));
+
+	return 1;
+}

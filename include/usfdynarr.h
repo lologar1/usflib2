@@ -7,8 +7,8 @@
 
 typedef struct usf_dynarr {
 	usf_data *array;
-	uint64_t capacity; /* Real array size */
-	uint64_t size; /* Virtual array size */
+	uint64_t capacity; /* Virtual array size */
+	uint64_t size; /* Real array size */
 } usf_dynarr;
 
 usf_dynarr *usf_newda(uint64_t size);

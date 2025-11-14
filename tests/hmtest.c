@@ -1,150 +1,77 @@
-#include "usflib2.h"
+#include <x86intrin.h>
 #include <stdio.h>
-#include <time.h>
+#include "usfhashmap.h"
 
-#define STRHM_SAMPLE_SIZE 1000000
-#define STRHM_DEL_OFFSET 1000
-#define INTHM_SAMPLE_SIZE 1000000
-#define INTHM_DEL_OFFSET 1000
+#define HMTEST_INTEGRITY_TEST_SIZE (1LU << 20)
+#define HMTEST_DELETION_STRIDE 7
+#define HMTEST_ACCESS_TEST_MAXSIZE (1LU << 25) /* Will double size each test */
+#define HMTEST_SAMPLE_SIZE 64
 
-double test(uint64_t, int);
+#define LOG(x, ...) fprintf(stderr, "hmtest: " x, ##__VA_ARGS__)
+#define LOGFAIL(HMTYPE, TESTTYPE) LOG("Incorrect value (" HMTYPE " hashmap failure) during " TESTTYPE \
+		" test at index %lu (got back %lu), aborting test\n", i, val);
 
-int main() {
-    uint64_t i, val;
-	char snum[100];
-	usf_hashmap *hm;
+int main(void) {
+	/* Test the usflib2 hashmap */
+	uint64_t i, val;
+	char s[512]; /* Way beyond max chars for numerical representation of int64 maximum */
+	LOG("Starting usfhashmap test\n");
 
-	printf("hmtest: Testing string hashmap integrity...\n");
+	LOG("Testing hashmap integrity...\n");
+	usf_hashmap *strhm, *inthm;
+	strhm = usf_newhm(); inthm = usf_newhm();
 
-	hm = usf_newhm();
-
-	printf("hmtest: Constructing...\n");
-	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
-		usf_strhmput(hm, snum, USFDATAU(i));
+	/* Construct */
+	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i++) {
+		sprintf(s, "%lu", i);
+		usf_strhmput(strhm, s, USFDATAU(i));
+		usf_inthmput(inthm, i, USFDATAU(i));
 	}
 
-	printf("hmtest: Testing access...\n");
-	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
-		if ((val = usf_strhmget(hm, snum).u) != i)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
+	/* Test */
+	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i++) {
+		sprintf(s, "%lu", i); val = usf_strhmget(strhm, s).u;
+		if (val != i) { LOGFAIL("string", "integrity"); break; }
+
+		val = usf_inthmget(inthm, i).u;
+		if (val != i) { LOGFAIL("integer", "integrity"); break; }
+	}
+	LOG("OK!\n");
+
+	LOG("Testing hashmap deletion...\n");
+	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i += HMTEST_DELETION_STRIDE) {
+		sprintf(s, "%lu", i); val = usf_strhmdel(strhm, s).u;
+		if (val != i) { LOGFAIL("string", "deletion"); break; }
+
+		val = usf_inthmdel(inthm, i).u;
+		if (val != i) { LOGFAIL("integer", "deletion"); break; }
 	}
 
-	printf("hmtest: Testing deletion...\n");
-	for (i = 0; i < STRHM_SAMPLE_SIZE; i += STRHM_DEL_OFFSET) {
-		sprintf(snum, "%lu", i);
-		if ((val = usf_strhmdel(hm, snum).u) != i)
-			printf("hmtest: Error ! Deletion at %lu got back %lu\n", i, val);
-	}
+	usf_freestrhm(strhm); usf_freehm(inthm); /* Cleanup */
+	LOG("OK!\n");
 
-	printf("hmtest: Retesting access...\n");
-	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
-		if ((val = usf_strhmget(hm, snum).u) != i && i % STRHM_DEL_OFFSET)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
-	}
+	LOG("Testing integer hashmap access time for sizes 2^n up to %lu\n", HMTEST_ACCESS_TEST_MAXSIZE);
+	uint64_t j, loops;
+	uint64_t start, end, cycles;
 
-	usf_freestrhm(hm);
+	for (i = 16; i <= HMTEST_ACCESS_TEST_MAXSIZE; i <<= 1) {
+		/* Populate */
+		inthm = usf_newhm();
+		for (j = 0; j < i; j++) usf_inthmput(inthm, j, USFDATAU(j));
 
-	printf("hmtest: Testing integer hashmap integrity...\n");
+		cycles = 0;
+		for (loops = 0; loops < HMTEST_SAMPLE_SIZE; loops++) {
 
-	hm = usf_newhm();
+			start = __rdtsc();
+			for (j = 0; j < i; j++) (void) usf_inthmget(inthm, j);
+			end = __rdtsc();
 
-	printf("hmtest: Constructing...\n");
-	for (i = 0; i < INTHM_SAMPLE_SIZE; i++) {
-		usf_inthmput(hm, i, USFDATAU(i));
-	}
-
-	printf("hmtest: Testing access...\n");
-	for (i = 0; i < INTHM_SAMPLE_SIZE; i++) {
-		if ((val = usf_inthmget(hm, i).u) != i)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
-	}
-
-	printf("hmtest: Testing deletion...\n");
-	for (i = 0; i < INTHM_SAMPLE_SIZE; i += INTHM_DEL_OFFSET) {
-		if ((val = usf_inthmdel(hm, i).u) != i)
-			printf("hmtest: Error ! Deletion at %lu got back %lu\n", i, val);
-	}
-
-	printf("hmtest: Retesting access...\n");
-	for (i = 0; i < INTHM_SAMPLE_SIZE; i++) {
-		if ((val = usf_inthmget(hm, i).u) != i && i % INTHM_DEL_OFFSET)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
-	}
-
-	usf_freehm(hm);
-
-    srand(time(NULL));
-
-	printf("hmtest: Computing string hashmap average access time...\n");
-
-    for (i = 2; i < 10000; i *= 2) {
-        printf("hmtest: Avg. access for size %lu: %f ns\n", i, test(i, 1));
-    }
-
-	printf("hmtest: Computing integer hashmap average access time...\n");
-
-    for (i = 2; i < 10000; i *= 2) {
-        printf("hmtest: Avg. access for size %lu: %f ns\n", i, test(i, 0));
-    }
-
-	printf("hmtest: End of test !\n");
-    return 0;
-}
-
-double test(uint64_t cycles, int string) {
-    uint64_t i, j;
-	char snum[100];
-	struct timespec start, end;
-	uint64_t avg = 0, globalavg = 0;
-
-	usf_hashmap *hm;
-	hm = usf_newhm();
-
-    for (i = 0; i < cycles; i++) {
-		if (string) {
-			sprintf(snum, "%lu", i);
-			usf_strhmput(hm, snum, USFDATAU(i));
-		} else {
-			usf_inthmput(hm, i, USFDATAU(i));
-		}
-    }
-
-    for (i = 0; i < cycles; i++) {
-		avg = 0;
-
-		if (string) {
-			sprintf(snum, "%lu", i);
-
-			for (j = 0; j < 1000; j++) {
-				clock_gettime(CLOCK_MONOTONIC, &start);
-				usf_strhmget(hm, snum);
-				clock_gettime(CLOCK_MONOTONIC, &end);
-
-				avg += (end.tv_sec - start.tv_sec) * 1000000000LL + (end.tv_nsec - start.tv_nsec);
-			}
-		} else {
-			for (j = 0; j < 1000; j++) {
-				clock_gettime(CLOCK_MONOTONIC, &start);
-				usf_inthmget(hm, i);
-				clock_gettime(CLOCK_MONOTONIC, &end);
-
-				avg += (end.tv_sec - start.tv_sec) * 1000000000LL + (end.tv_nsec - start.tv_nsec);
-			}
+			cycles += end - start;
 		}
 
-		globalavg += avg / 1000;
+		usf_freehm(inthm);
+
+		LOG("Size %lu took %lu cycles per access\n", i, cycles / (HMTEST_SAMPLE_SIZE * i));
 	}
 
-    /* Cleanup */
-	if (string) {
-		usf_freestrhm(hm);
-	} else {
-		usf_freehm(hm);
-	}
-
-    return (double) globalavg/cycles;
 }
-

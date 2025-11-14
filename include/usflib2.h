@@ -4,5 +4,6 @@
 #include "usfstring.h"
 #include "usfcollection.h"
 #include "usfio.h"
+#include "usfmath.h"
 
 #endif
