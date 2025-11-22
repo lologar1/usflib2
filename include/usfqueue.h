@@ -15,6 +15,7 @@ typedef struct usf_queue {
 	usf_queuenode *last;
 } usf_queue;
 
+usf_queue *usf_newqueue(void);
 usf_queue *usf_enqueue(usf_queue *, usf_data);
 usf_data usf_dequeue(usf_queue *);
 

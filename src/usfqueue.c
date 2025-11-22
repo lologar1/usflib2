@@ -1,48 +1,46 @@
 #include "usfqueue.h"
 
-//Enqueue to FIFO queue
+usf_queue *usf_newqueue(void) {
+	/* Make new queue */
+	usf_queue *queue;
+
+	queue = malloc(sizeof(usf_queue));
+	queue->first = queue->last = NULL;
+
+	return queue;
+}
+
 usf_queue *usf_enqueue(usf_queue *queue, usf_data d) {
-	if (queue == NULL) {
-		//Generate new queue
-		queue = (usf_queue *) malloc(sizeof(usf_queue));
+	/* Enqueue to FIFO queue */
+	usf_queuenode *append;
 
-		if (queue == NULL) return NULL; //Memory allocation failure
+	if (queue == NULL) return NULL;
 
-		//Empty at first
-		queue -> first = queue -> last = NULL;
-	}
+	append = malloc(sizeof(usf_queuenode));
+	append->data = d;
+	append->next = NULL; /* Last in line */
 
-	usf_queuenode *append = (usf_queuenode *) malloc(sizeof(usf_queuenode));
-
-	if (append == NULL) return NULL; //Memory allocation failure
-
-	append -> data = d;
-	append -> next = NULL; //Last in line
-
-	if (queue -> last == NULL) //Was empty
-		queue -> first = queue -> last = append;
-	else { //Normal adding
-		queue -> last -> next = append;
-		queue -> last = append;
+	if (queue->last == NULL) queue->first = queue->last = append; /* Was empty */
+	else {
+		queue->last->next = append;
+		queue->last = append;
 	}
 
 	return queue;
 }
 
-//Dequeue from FIFO queue
 usf_data usf_dequeue(usf_queue *queue) {
-	usf_data d;
-	usf_queuenode *old;
+	/* Dequeue from FIFO queue */
+	usf_queuenode *node;
+	usf_data data;
 
-	if (queue == NULL || queue -> first == NULL)
-		return (usf_data) { .p = NULL }; //No queue, or queue is empty
+	node = queue->first;
+	if (queue == NULL || node == NULL) return USFNULL; /* Queue is NULL or is empty */
 
-	old = queue -> first;
-	d = old -> data; //Get data
+	data = node->data; /* Retrieve data */
 
-	if ((queue -> first = old -> next) == NULL)
-		queue -> last = NULL;
+	if ((queue->first = node->next) == NULL) queue->last = NULL; /* Adjust queue */
+	free(node);
 
-	free(old); //Destroy dequeued node
-	return d;
+	return data;
 }
