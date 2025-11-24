@@ -44,3 +44,28 @@ usf_data usf_dequeue(usf_queue *queue) {
 
 	return data;
 }
+
+void usf_freequeue(usf_queue *queue) {
+	/* Frees all nodes and the queue itself */
+	usf_queuenode *node, *next;
+
+	for (node = queue->first; node; node = next) {
+		next = node->next;
+		free(node);
+	}
+
+	free(queue);
+}
+
+void usf_freequeueptr(usf_queue *queue) {
+	/* Frees all nodes and the queue itself, and its data */
+	usf_queuenode *node, *next;
+
+	for (node = queue->first; node; node = next) {
+		next = node->next;
+		free(node->data.p);
+		free(node);
+	}
+
+	free(queue);
+}

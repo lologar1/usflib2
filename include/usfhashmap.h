@@ -28,6 +28,8 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, uint64_t key);
 void usf_resizestrhm(usf_hashmap *, uint64_t size);
 void usf_resizeinthm(usf_hashmap *hashmap, uint64_t size);
 void usf_freestrhm(usf_hashmap *hashmap);
+void usf_freestrhmptr(usf_hashmap *hashmap);
 void usf_freehm(usf_hashmap *hashmap);
+void usf_freehmptr(usf_hashmap *hashmap);
 
 #endif

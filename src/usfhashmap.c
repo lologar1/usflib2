@@ -266,6 +266,27 @@ void usf_freestrhm(usf_hashmap *hashmap) {
 	free(hashmap);
 }
 
+void usf_freestrhmptr(usf_hashmap *hashmap) {
+	uint64_t i;
+	usf_data **array = hashmap->array;
+	usf_data *entry;
+
+	for (i = 0; i < hashmap->capacity; i++) {
+		entry = array[i];
+		if (entry == NULL) continue; //Uninitialized
+
+		if (entry[0].p) {
+			free(entry[0].p); //Free key pointer
+			free(entry[1].p); /* Ptr version deallocs values */
+		}
+
+		free(entry); //Free key:val pair
+	}
+
+	free(array); //Final free of entire array
+	free(hashmap);
+}
+
 void usf_freehm(usf_hashmap *hashmap) {
 	uint64_t i;
 	usf_data **array = hashmap->array;
@@ -275,6 +296,23 @@ void usf_freehm(usf_hashmap *hashmap) {
 		entry = array[i];
 		if (entry == NULL || entry == (usf_data *) hashmap) continue; //No tuple
 
+		free(entry); //Free key:val pair
+	}
+
+	free(array); //Final free of entire array
+	free(hashmap);
+}
+
+void usf_freehmptr(usf_hashmap *hashmap) {
+	uint64_t i;
+	usf_data **array = hashmap->array;
+	usf_data *entry;
+
+	for (i = 0; i < hashmap->capacity; i++) {
+		entry = array[i];
+		if (entry == NULL || entry == (usf_data *) hashmap) continue; //No tuple
+
+		free(entry[1].p); /* Ptr version deallocs keys as ptrs */
 		free(entry); //Free key:val pair
 	}
 
