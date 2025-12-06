@@ -4,7 +4,7 @@ OBJ_DIR := obj
 TEST_DIR := tests
 
 CC := gcc
-CFLAGS := -Wall -Wextra -pedantic -O2
+CFLAGS := -Wall -Wextra -pedantic -O2 -g
 INCLUDES := -I$(INC_DIR)
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
@@ -22,7 +22,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(TEST_BINS)
 
 $(TEST_DIR)/%: $(TEST_DIR)/%.c
-	$(CC) $(CFLAGS) $(INCLUDES) $< $(OBJS) -o $@
+	$(CC) $(CFLAGS) -O0 $(INCLUDES) $< $(OBJS) -o $@
 
 clean:
 	rm -rf $(OBJ_DIR)

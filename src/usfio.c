@@ -45,7 +45,7 @@ char *usf_ftos(char *file, uint64_t *l) {
 }
 
 char **usf_ftot(char *file, uint64_t *l) {
-	/* Reads a file and returns a 2D array of pointers to lines (incl. \n */
+	/* Reads a file and returns a 2D array of pointers to lines (incl. \n) */
 
 	char *filestring;
 	uint64_t fslen;
@@ -77,6 +77,14 @@ char **usf_ftot(char *file, uint64_t *l) {
 	free(filestring);
 
 	return txt;
+}
+
+char **usf_ftost(char *file, uint64_t *l) {
+	char **stringtext;
+	stringtext = usf_scsplit(usf_ftos(file, NULL), '\n', l);
+	--*l; /* scsplit returns number of substrings, so account for last empty substring (terminating \n) */
+
+	return stringtext;
 }
 
 void usf_freetxt(char **text, uint64_t nlines) {

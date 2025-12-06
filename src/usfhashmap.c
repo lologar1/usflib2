@@ -31,11 +31,9 @@ usf_hashmap *usf_newhm(void) {
 }
 
 /* Common loop to find and access a hashmap element
- * Variables to use : hashmap (reference to usf_hashmap *)
- * key : reference to the key
- * hashfunc : name of the hashing function
- *
- * Be sure that there are no name collisions when using this macro!
+ * hashmap : reference to usf_hashmap *
+ * key : reference to the key (uint64_t or string)
+ * hashfunc : hashing function
  * */
 #define HMACCESS(hashmap, key, hashfunc, TESTCASE) \
 	uint64_t i, hash, cap; \
@@ -104,7 +102,7 @@ usf_data usf_strhmget(usf_hashmap *hashmap, char *key) {
 	if (hashmap == NULL) return USFNULL;
 
 #define TESTCASE \
-	if (entry == NULL) /* Not present */ \
+	if (entry == NULL) \
 		return USFNULL; \
 	\
 	if (entry[0].p == NULL || strcmp(key, (char *) entry[0].p)) \
@@ -131,59 +129,45 @@ usf_data usf_inthmget(usf_hashmap *hashmap, uint64_t key) {
 }
 
 usf_data usf_strhmdel(usf_hashmap *hashmap, char *key) {
-	uint64_t i, hash, cap;
-	usf_data *entry, v;
+	usf_data v;
 
 	if (hashmap == NULL) return USFNULL;
 
-	cap = hashmap -> capacity;
-	i = usf_strhash(key);
-
-	for (;; i = usf_hash(i)) {
-		hash = i % cap;
-
-		entry = hashmap->array[hash];
-
-		if (entry == NULL)
-			return USFNULL;
-
-		if (entry[0].p == NULL || strcmp(key, (char *) entry[0].p))
-			continue;
-
-		hashmap->size--; //Decrement count
-		v = entry[1]; //Get data
-		free(entry[0].p);
-		entry[0] = USFNULL; //Destroy key to mark as uninitialized
-		return v;
-	}
+#define TESTCASE \
+	if (entry == NULL) \
+		return USFNULL; \
+	\
+	if (entry[0].p == NULL || strcmp(key, (char *) entry[0].p)) \
+		continue; \
+	\
+	hashmap->size--; \
+	v = entry[1]; \
+	free(entry[0].p); \
+	entry[0] = USFNULL; \
+	return v;
+	HMACCESS(hashmap, key, usf_strhash, TESTCASE);
+#undef TESTCASE
 }
 
 usf_data usf_inthmdel(usf_hashmap *hashmap, uint64_t key) {
-	uint64_t i, hash, cap;
-	usf_data *entry, v;
+	usf_data v;
 
 	if (hashmap == NULL) return USFNULL;
 
-	cap = hashmap -> capacity;
-	i = usf_hash(key);
-
-	for (;; i = usf_hash(i)) {
-		hash = i % cap;
-
-		entry = hashmap->array[hash];
-
-		if (entry == NULL)
-			return USFNULL;
-
-		if (entry == (usf_data *) hashmap || entry[0].u != key)
-			continue; //Collision
-
-		hashmap->size--;
-		v = entry[1]; //Data
-		free(entry); //Destroy tuple
-		hashmap->array[hash] = (usf_data *) hashmap; //Mark as uninitialized without breaking chain
-		return v;
-	}
+#define TESTCASE \
+	if (entry == NULL) \
+		return USFNULL; \
+	\
+	if (entry == (usf_data *) hashmap || entry[0].u != key) \
+		continue; \
+	\
+	hashmap->size--; \
+	v = entry[1]; \
+	free(entry); \
+	hashmap->array[hash] = (usf_data *) hashmap; /* Use hashmap pointer as dead node indicator */ \
+	return v;
+	HMACCESS(hashmap, key, usf_hash, TESTCASE);
+#undef TESTCASE
 }
 
 void usf_resizeinthm(usf_hashmap *hashmap, uint64_t size) {

@@ -4,14 +4,14 @@
 
 #define HMTEST_INTEGRITY_TEST_SIZE (1LU << 20)
 #define HMTEST_DELETION_STRIDE 7
-#define HMTEST_ACCESS_TEST_MAXSIZE (1LU << 25) /* Will double size each test */
+#define HMTEST_ACCESS_TEST_MAXSIZE (1LU << 20) /* Will double size each test */
 #define HMTEST_SAMPLE_SIZE 64
 
-#define LOG(x, ...) fprintf(stderr, "hmtest: " x, ##__VA_ARGS__)
+#define LOG(MSG, ...) fprintf(stderr, "hmtest: " MSG, ##__VA_ARGS__)
 #define LOGFAIL(HMTYPE, TESTTYPE) LOG("Incorrect value (" HMTYPE " hashmap failure) during " TESTTYPE \
-		" test at index %lu (got back %lu), aborting test\n", i, val);
+		" test at index %lu (got back %lu), aborting test.\n", i, val)
 
-int main(void) {
+int32_t main(void) {
 	/* Test the usflib2 hashmap */
 	uint64_t i, val;
 	char s[512]; /* Way beyond max chars for numerical representation of int64 maximum */
@@ -71,7 +71,9 @@ int main(void) {
 
 		usf_freehm(inthm);
 
-		LOG("Size %lu took %lu cycles per access\n", i, cycles / (HMTEST_SAMPLE_SIZE * i));
+		LOG("Size %lu took %f CPU cycles per access\n", i, (double) cycles / (HMTEST_SAMPLE_SIZE * i));
 	}
+
+	LOG("Note that cache effects can make an O(1) access grow with size.\n");
 
 }

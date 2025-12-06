@@ -146,7 +146,7 @@ char **usf_scsplit(char *str, char sep, uint64_t *count) {
 	return substrings;
 }
 
-int usf_strcat(char *destination, size_t size, unsigned int n, ...) {
+int usf_strcat(char *destination, size_t size, uint32_t n, ...) {
 	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
 	size_t catsize = 0;
 
@@ -154,7 +154,7 @@ int usf_strcat(char *destination, size_t size, unsigned int n, ...) {
 	va_start(args, n);
 	va_copy(sizecheck, args);
 
-	unsigned int i;
+	uint32_t i;
 	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
 	va_end(sizecheck);
 
@@ -167,14 +167,14 @@ int usf_strcat(char *destination, size_t size, unsigned int n, ...) {
 	return 1;
 }
 
-int usf_vstrcat(char *destination, size_t size, unsigned int n, va_list args) {
+int usf_vstrcat(char *destination, size_t size, uint32_t n, va_list args) {
 	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
 	size_t catsize = 0;
 
 	va_list sizecheck;
 	va_copy(sizecheck, args);
 
-	unsigned int i;
+	uint32_t i;
 	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
 	va_end(sizecheck);
 

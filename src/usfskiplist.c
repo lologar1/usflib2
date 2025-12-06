@@ -1,165 +1,117 @@
 #include "usfskiplist.h"
 
-/*
-A skiplist simulates an infinitely (64 bit addr) large array whose elements can
-be set, deleted (set to 0, although this frees memory), or accessed
-(returns literal 0 when not present).
-
-All operations take O(log n) time. Index 0 may not be deleted, but it can be set to 0.
-*/
-
 usf_skiplist *usf_newsk(void) {
 	/* Allocate new skiplist */
 	usf_skiplist *skiplist;
-	usf_skipnode *node;
+	skiplist = calloc(1, sizeof(usf_skiplist));
 
-	skiplist = malloc(sizeof(usf_skiplist));
-	skiplist -> size = 1;
-
-	node = malloc(sizeof(usf_skipnode));
-
-	node -> nextnodes = calloc(sizeof(usf_skipnode **), USF_SKIPLIST_HEADSIZE);
-
-	/* Set base data */
-	node -> index = 0;
-	node -> data = USFNULL;
-
-	skiplist -> head = node;
 	return skiplist;
 }
 
 usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
-	int j;
-	usf_skipnode *node, *next, **ptrs;
-	usf_skipnode *position[USF_SKIPLIST_HEADSIZE];
+	/* Insert element at index i in the skiplist */
+	if (skiplist == NULL) return NULL; /* Nonexistent */
 
-	if (skiplist == NULL) //Make skiplist
-		skiplist = usf_newsk();
+	int32_t level;
+	usf_skipnode **skiplinks[USF_SKIPLIST_HEADSIZE], **skipframe, *node;
 
-	//Insert data at index i in skiplist
-	node = skiplist -> head; //Start
-
-	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
-		next = node -> nextnodes[j];
-
-		while (next && next -> index <= i) {
-			node = next;
-			next = node -> nextnodes[j];
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+		while ((node = skipframe[level])) {
+			if (node->index > i) break; /* Overshot */
+			if (node->index == i) { /* Found; only modify node */
+				node->data = data;
+				return skiplist;
+			}
+			skipframe = node->nextnodes;
 		}
-
-		//At max node in this stage
-		position[j] = node;
+		skiplinks[level] = &skipframe[level];
 	}
 
-	if (node -> index == i) {
-		//Already present
-		node -> data = data;
-		return skiplist;
+	node = calloc(1, sizeof(usf_skipnode)); /* Skipframe zeroed (NULL) by default */
+	node->data = data; node->index = i;
+	for (level = 0; level < USF_SKIPLIST_HEADSIZE; level++) {
+		node->nextnodes[level] = *skiplinks[level]; /* Link this with next */
+		*skiplinks[level] = node; /* Link prev with this */
+
+		if (rand() & 1) break; /* Probabilistic upkeep */
 	}
 
-	//Add and link
-	node = malloc(sizeof(usf_skipnode));
-	node -> index = i;
-	node -> data = data;
-
-	for (j = 1; j < USF_SKIPLIST_HEADSIZE; j++)
-		if (rand() & 1) break; //Probabilistic upkeep
-
-	ptrs = malloc(sizeof(usf_skipnode *) * j);
-
-	for (j--; j >= 0; j--) {
-		ptrs[j] = position[j] -> nextnodes[j]; //Link to next
-		position[j] -> nextnodes[j] = node; //Link prev to this
-	}
-
-	node -> nextnodes = ptrs;
-	skiplist -> size++; //Add element
+	skiplist->size++;
 	return skiplist;
 }
 
 usf_data usf_skget(usf_skiplist *skiplist, uint64_t i) {
-	int j;
-	usf_skipnode *node, *next;
+	/* Get value at index i in skiplist; returns USFNULL if it doesn't exist */
+	if (skiplist == NULL) return USFNULL;
 
-	node = skiplist -> head;
-
-	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
-		next = node -> nextnodes[j];
-
-		while (next && next -> index <= i) {
-			/* Loop unrolling: two iterations per while cycle */
-			node = next;
-			if ((next = node -> nextnodes[j]) == NULL || next -> index > i) break;
-
-			node = next;
-			next = node -> nextnodes[j];
+	int32_t level;
+	usf_skipnode **skipframe, *node;
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+		while ((node = skipframe[level])) {
+			if (node->index > i) break; /* Overshot */
+			if (node->index == i) return node->data; /* Found */
+			skipframe = node->nextnodes; /* Continue */
 		}
-
-		if (node -> index == i) break;
 	}
 
-	if (node -> index != i) return USFNULL;
-
-	return node -> data;
+	return USFNULL; /* Did not find */
 }
 
 usf_data usf_skdel(usf_skiplist *skiplist, uint64_t i) {
-	int j;
-	usf_skipnode *node, *next;
-	usf_data v;
+	/* Same as usf_skget but delete and unlink node if found */
+	if (skiplist == NULL) return USFNULL;
 
-	if (i == 0) {
-		/* Cannot delete 0, although setting to 0 has
-		virtually the same effect */
-		v = usf_skget(skiplist, 0);
-		usf_skset(skiplist, 0, USFNULL);
-		return v;
-	}
-
-	node = skiplist -> head;
-
-	for (j = USF_SKIPLIST_HEADSIZE - 1; j >= 0; j--) {
-		next = node -> nextnodes[j];
-
-		while (next && next -> index < i) {
-			node = next;
-			next = node -> nextnodes[j];
+	int32_t level;
+	usf_data data;
+	usf_skipnode **skipframe, *node;
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+		while ((node = skipframe[level])) {
+			if (node->index > i) break; /* Overshot */
+			if (node->index == i) { /* Unlink */
+				skipframe[level] = node->nextnodes[level];
+				break;
+			}
+			skipframe = node->nextnodes; /* Continue */
 		}
-
-		//Unlink
-		if (next != NULL && next -> index == i)
-			node -> nextnodes[j] = next -> nextnodes[j];
 	}
 
-	//Set node to the one we want to delete
-	node = next;
+	if (node && node->index == i) { /* Found */
+		data = node->data;
+		free(node);
+		return data;
+	}
 
-	//Did not find
-	if (node == NULL || node -> index != i) return USFNULL;
-
-	v = node -> data; //Get data
-
-	free(node -> nextnodes); //Free pointers
-	free(node); //Free node itself
-	skiplist -> size--; //Decrement count
-
-	return v; //User takes care of data
+	return USFNULL; /* Did not find */
 }
 
 void usf_freesk(usf_skiplist *skiplist) {
-	usf_skipnode *node, *r;
-
+	/* Frees a skiplist */
 	if (skiplist == NULL) return;
 
-	//Free by walking level 0 linked list
-	node = skiplist -> head;
+	usf_skipnode *node, *prev;
+	node = skiplist->base[0];
 
-	while(node != NULL) {
-		r = node;
-		node = r -> nextnodes[0]; //Next
+	while (node) {
+		prev = node;
+		node = prev->nextnodes[0]; /* Get next then free the one we were on */
+		free(prev);
+	}
 
-		free(r -> nextnodes);
-		free(r);
+	free(skiplist);
+}
+
+void usf_freeskptr(usf_skiplist *skiplist) {
+	/* Frees a skiplist and its contents */
+	if (skiplist == NULL) return;
+
+	usf_skipnode *node, *prev;
+	node = skiplist->base[0];
+
+	while (node) {
+		prev = node;
+		node = prev->nextnodes[0]; /* Get next then free the one we were on */
+		free(prev->data.p); /* Free contents */
+		free(prev);
 	}
 
 	free(skiplist);
