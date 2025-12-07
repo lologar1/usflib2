@@ -65,4 +65,5 @@ int32_t main() {
 
 		LOG("Size %lu took %f CPU cycles per access\n", i, (double) cycles / SKPTEST_SAMPLE_SIZE);
 	}
+	usf_freesk(skiplist);
 }

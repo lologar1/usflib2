@@ -5,16 +5,16 @@
 #include <string.h>
 #include "usfdata.h"
 
-#define USF_SKIPLIST_HEADSIZE 24
+#define USF_SKIPLIST_FRAMESIZE 24
 
 typedef struct usf_skipnode {
-	struct usf_skipnode *nextnodes[USF_SKIPLIST_HEADSIZE];
+	struct usf_skipnode *nextnodes[USF_SKIPLIST_FRAMESIZE];
 	usf_data data;
 	uint64_t index;
 } usf_skipnode;
 
 typedef struct usf_skiplist {
-	usf_skipnode *base[USF_SKIPLIST_HEADSIZE];
+	usf_skipnode *base[USF_SKIPLIST_FRAMESIZE];
 	uint64_t size;
 } usf_skiplist;
 

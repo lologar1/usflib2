@@ -13,9 +13,9 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
 	if (skiplist == NULL) return NULL; /* Nonexistent */
 
 	int32_t level;
-	usf_skipnode **skiplinks[USF_SKIPLIST_HEADSIZE], **skipframe, *node;
+	usf_skipnode **skiplinks[USF_SKIPLIST_FRAMESIZE], **skipframe, *node;
 
-	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_FRAMESIZE - 1; level >= 0; level--) {
 		while ((node = skipframe[level])) {
 			if (node->index > i) break; /* Overshot */
 			if (node->index == i) { /* Found; only modify node */
@@ -29,7 +29,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, uint64_t i, usf_data data) {
 
 	node = calloc(1, sizeof(usf_skipnode)); /* Skipframe zeroed (NULL) by default */
 	node->data = data; node->index = i;
-	for (level = 0; level < USF_SKIPLIST_HEADSIZE; level++) {
+	for (level = 0; level < USF_SKIPLIST_FRAMESIZE; level++) {
 		node->nextnodes[level] = *skiplinks[level]; /* Link this with next */
 		*skiplinks[level] = node; /* Link prev with this */
 
@@ -46,7 +46,7 @@ usf_data usf_skget(usf_skiplist *skiplist, uint64_t i) {
 
 	int32_t level;
 	usf_skipnode **skipframe, *node;
-	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_FRAMESIZE - 1; level >= 0; level--) {
 		while ((node = skipframe[level])) {
 			if (node->index > i) break; /* Overshot */
 			if (node->index == i) return node->data; /* Found */
@@ -64,7 +64,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, uint64_t i) {
 	int32_t level;
 	usf_data data;
 	usf_skipnode **skipframe, *node;
-	for (skipframe = skiplist->base, level = USF_SKIPLIST_HEADSIZE - 1; level >= 0; level--) {
+	for (skipframe = skiplist->base, level = USF_SKIPLIST_FRAMESIZE - 1; level >= 0; level--) {
 		while ((node = skipframe[level])) {
 			if (node->index > i) break; /* Overshot */
 			if (node->index == i) { /* Unlink */
