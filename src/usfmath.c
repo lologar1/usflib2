@@ -11,6 +11,11 @@ double usf_elapsedtimens(struct timespec start, struct timespec end) {
 	return (end.tv_sec - start.tv_sec) * 1000000000LU + (end.tv_nsec - start.tv_nsec);
 }
 
+int32_t usf_indi32cmp(const void *a, const void *b) { return *((int32_t *) a) - *((int32_t *) b); }
+int32_t usf_indu32cmp(const void *a, const void *b) { return *((uint32_t *) a) - *((uint32_t *) b); }
+int32_t usf_indi64cmp(const void *a, const void *b) { return *((int64_t *) a) - *((int64_t *) b); }
+int32_t usf_indu64cmp(const void *a, const void *b) { return *((uint64_t *) a) - *((uint64_t *) b); }
+
 int32_t usf_maxi32(int32_t a, int32_t b) { return a > b ? a : b; }
 uint32_t usf_maxu32(uint32_t a, uint32_t b) { return a > b ? a : b; }
 int64_t usf_maxi64(int64_t a, int64_t b) { return a > b ? a : b; }

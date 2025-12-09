@@ -43,6 +43,11 @@ double usf_elapsedtimens(struct timespec start, struct timespec end);
 			uint64_t: usf_clampu64 \
 		)((X), (LOW), (HIGH))
 
+int32_t usf_indi32cmp(const void *a, const void *b);
+int32_t usf_indu32cmp(const void *a, const void *b);
+int32_t usf_indi64cmp(const void *a, const void *b);
+int32_t usf_indu64cmp(const void *a, const void *b);
+
 int32_t usf_maxi32(int32_t a, int32_t b);
 uint32_t usf_maxu32(uint32_t a, uint32_t b);
 int64_t usf_maxi64(int64_t a, int64_t b);
