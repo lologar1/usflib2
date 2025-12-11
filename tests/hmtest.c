@@ -24,14 +24,14 @@ int32_t main(void) {
 
 	/* Construct */
 	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i++) {
-		sprintf(s, "%lu", i);
+		sprintf(s, "%"PRIu64"", i);
 		usf_strhmput(strhm, s, USFDATAU(i));
 		usf_inthmput(inthm, i, USFDATAU(i));
 	}
 
 	/* Test */
 	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i++) {
-		sprintf(s, "%lu", i); val = usf_strhmget(strhm, s).u;
+		sprintf(s, "%"PRIu64"", i); val = usf_strhmget(strhm, s).u;
 		if (val != i) { LOGFAIL("string", "integrity"); break; }
 
 		val = usf_inthmget(inthm, i).u;
@@ -41,7 +41,7 @@ int32_t main(void) {
 
 	LOG("Testing hashmap deletion...\n");
 	for (i = 0; i < HMTEST_INTEGRITY_TEST_SIZE; i += HMTEST_DELETION_STRIDE) {
-		sprintf(s, "%lu", i); val = usf_strhmdel(strhm, s).u;
+		sprintf(s, "%"PRIu64"", i); val = usf_strhmdel(strhm, s).u;
 		if (val != i) { LOGFAIL("string", "deletion"); break; }
 
 		val = usf_inthmdel(inthm, i).u;
@@ -51,7 +51,7 @@ int32_t main(void) {
 	usf_freestrhm(strhm); usf_freehm(inthm); /* Cleanup */
 	LOG("OK!\n");
 
-	LOG("Testing integer hashmap access time for sizes 2^n up to %lu\n", HMTEST_ACCESS_TEST_MAXSIZE);
+	LOG("Testing integer hashmap access time for sizes 2^n up to %"PRIu64"\n", HMTEST_ACCESS_TEST_MAXSIZE);
 	uint64_t j, loops;
 	uint64_t start, end, cycles;
 
@@ -72,7 +72,7 @@ int32_t main(void) {
 
 		usf_freehm(inthm);
 
-		LOG("Size %lu took %f CPU cycles per access\n", i, (double) cycles / (HMTEST_SAMPLE_SIZE * i));
+		LOG("Size %"PRIu64" took %f CPU cycles per access\n", i, (double) cycles / (HMTEST_SAMPLE_SIZE * i));
 	}
 
 	LOG("Note that cache effects can make an O(1) access grow with size.\n");

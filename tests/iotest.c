@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <inttypes.h>
 #include "usfio.h"
 
 char *textNoNewline[] =
@@ -48,7 +49,7 @@ int main() {
 	usf_btof("binary.bin", btest, sizeof(btest));
 	size_t b[1];
 	char *gotback = usf_ftob("binary.bin", b);
-	printf("Gotback %d %d %d %d %d %d %d bytes %lu\n", gotback[0], gotback[1], gotback[2], gotback[3], gotback[4], gotback[5], gotback[6], *b);
+	printf("Gotback %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" bytes %"PRIu64"\n", gotback[0], gotback[1], gotback[2], gotback[3], gotback[4], gotback[5], gotback[6], *b);
 
 	printf("iotest: End of test !\n");
 }

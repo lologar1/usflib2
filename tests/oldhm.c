@@ -1,5 +1,6 @@
 #include "usflib2.h"
 #include <stdio.h>
+#include <inttypes.h>
 #include <time.h>
 
 #define STRHM_SAMPLE_SIZE 1000000
@@ -20,29 +21,29 @@ int main() {
 
 	printf("hmtest: Constructing...\n");
 	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
+		sprintf(snum, "%"PRIu64"", i);
 		usf_strhmput(hm, snum, USFDATAU(i));
 	}
 
 	printf("hmtest: Testing access...\n");
 	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
+		sprintf(snum, "%"PRIu64"", i);
 		if ((val = usf_strhmget(hm, snum).u) != i)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Index %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	printf("hmtest: Testing deletion...\n");
 	for (i = 0; i < STRHM_SAMPLE_SIZE; i += STRHM_DEL_OFFSET) {
-		sprintf(snum, "%lu", i);
+		sprintf(snum, "%"PRIu64"", i);
 		if ((val = usf_strhmdel(hm, snum).u) != i)
-			printf("hmtest: Error ! Deletion at %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Deletion at %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	printf("hmtest: Retesting access...\n");
 	for (i = 0; i < STRHM_SAMPLE_SIZE; i++) {
-		sprintf(snum, "%lu", i);
+		sprintf(snum, "%"PRIu64"", i);
 		if ((val = usf_strhmget(hm, snum).u) != i && i % STRHM_DEL_OFFSET)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Index %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	usf_freestrhm(hm);
@@ -59,19 +60,19 @@ int main() {
 	printf("hmtest: Testing access...\n");
 	for (i = 0; i < INTHM_SAMPLE_SIZE; i++) {
 		if ((val = usf_inthmget(hm, i).u) != i)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Index %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	printf("hmtest: Testing deletion...\n");
 	for (i = 0; i < INTHM_SAMPLE_SIZE; i += INTHM_DEL_OFFSET) {
 		if ((val = usf_inthmdel(hm, i).u) != i)
-			printf("hmtest: Error ! Deletion at %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Deletion at %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	printf("hmtest: Retesting access...\n");
 	for (i = 0; i < INTHM_SAMPLE_SIZE; i++) {
 		if ((val = usf_inthmget(hm, i).u) != i && i % INTHM_DEL_OFFSET)
-			printf("hmtest: Error ! Index %lu got back %lu\n", i, val);
+			printf("hmtest: Error ! Index %"PRIu64" got back %"PRIu64"\n", i, val);
 	}
 
 	usf_freehm(hm);
@@ -81,13 +82,13 @@ int main() {
 	printf("hmtest: Computing string hashmap average access time...\n");
 
     for (i = 2; i < 10000; i *= 2) {
-        printf("hmtest: Avg. access for size %lu: %f ns\n", i, test(i, 1));
+        printf("hmtest: Avg. access for size %"PRIu64": %f ns\n", i, test(i, 1));
     }
 
 	printf("hmtest: Computing integer hashmap average access time...\n");
 
     for (i = 2; i < 10000; i *= 2) {
-        printf("hmtest: Avg. access for size %lu: %f ns\n", i, test(i, 0));
+        printf("hmtest: Avg. access for size %"PRIu64": %f ns\n", i, test(i, 0));
     }
 
 	printf("hmtest: End of test !\n");
@@ -105,7 +106,7 @@ double test(uint64_t cycles, int string) {
 
     for (i = 0; i < cycles; i++) {
 		if (string) {
-			sprintf(snum, "%lu", i);
+			sprintf(snum, "%"PRIu64"", i);
 			usf_strhmput(hm, snum, USFDATAU(i));
 		} else {
 			usf_inthmput(hm, i, USFDATAU(i));
@@ -116,7 +117,7 @@ double test(uint64_t cycles, int string) {
 		avg = 0;
 
 		if (string) {
-			sprintf(snum, "%lu", i);
+			sprintf(snum, "%"PRIu64"", i);
 
 			for (j = 0; j < 1000; j++) {
 				clock_gettime(CLOCK_MONOTONIC, &start);
