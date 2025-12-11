@@ -13,19 +13,19 @@ double usf_elapsedtimens(struct timespec start, struct timespec end) {
 
 int32_t usf_indi32cmp(const void *a, const void *b) {
 	int32_t x = *((int32_t *) a), y = *((int32_t *) b);
-	return a > b ? 1 : a < b ? -1 : 0;
+	return x > y ? 1 : x < y ? -1 : 0;
 }
 int32_t usf_indu32cmp(const void *a, const void *b) {
 	uint32_t x = *((uint32_t *) a), y = *((uint32_t *) b);
-	return a > b ? 1 : a < b ? -1 : 0;
+	return x > y ? 1 : x < y ? -1 : 0;
 }
 int32_t usf_indi64cmp(const void *a, const void *b) {
 	int32_t x = *((int64_t *) a), y = *((int64_t *) b);
-	return a > b ? 1 : a < b ? -1 : 0;
+	return x > y ? 1 : x < y ? -1 : 0;
 }
 int32_t usf_indu64cmp(const void *a, const void *b) {
 	int32_t x = *((uint64_t *) a), y = *((uint64_t *) b);
-	return a > b ? 1 : a < b ? -1 : 0;
+	return x > y ? 1 : x < y ? -1 : 0;
 }
 int32_t usf_maxi32(int32_t a, int32_t b) { return a > b ? a : b; }
 uint32_t usf_maxu32(uint32_t a, uint32_t b) { return a > b ? a : b; }
