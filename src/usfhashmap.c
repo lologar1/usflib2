@@ -1,9 +1,7 @@
 #include "usfhashmap.h"
 
 uint64_t usf_strhash(const char *str) {
-    uint64_t hash = 5381;
-    int c;
-
+    uint64_t hash = 5381, c;
     while ((c = *str++)) {
         hash = ((hash << 5) + hash) + c;
     }
@@ -58,7 +56,7 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, char *key, usf_data value) {
 	if (entry == NULL || entry[0].p == NULL || !strcmp((char *) entry[0].p, key)) { \
 		/* Uninitialized node, or deleted node (keep rehash chain), or the right node */ \
 		if (entry == NULL) /* Initialize it if not */ \
-			entry = hashmap->array[hash] = calloc(2, sizeof(usf_data *)); \
+			entry = hashmap->array[hash] = calloc(2, sizeof(usf_data)); \
 		\
 		if (entry[0].p == NULL) { /* Make key if we create the node instead of overwriting it */ \
 			entry[0] = USFDATAP(malloc(sizeof(char) * (strlen(key) + 1))); \
@@ -84,7 +82,7 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, uint64_t key, usf_data value) {
 	/* hashmap itself is used as a DEADBEEF pointer */ \
 	if (entry == NULL || (void *) entry == (void *) hashmap || entry[0].u == key) { \
 		if (entry == NULL || entry == (usf_data *) hashmap) { /* Empty or overwriting */ \
-			entry = hashmap->array[hash] = calloc(2, sizeof(usf_data *)); \
+			entry = hashmap->array[hash] = calloc(2, sizeof(usf_data)); \
 			entry[0] = USFDATAU(key); \
 			hashmap -> size++; \
 		} \

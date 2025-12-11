@@ -1,5 +1,6 @@
 #include <x86intrin.h>
 #include <stdio.h>
+#include <inttypes.h>
 #include "usfhashmap.h"
 
 #define HMTEST_INTEGRITY_TEST_SIZE (1LU << 20)
@@ -9,7 +10,7 @@
 
 #define LOG(MSG, ...) fprintf(stderr, "hmtest: " MSG, ##__VA_ARGS__)
 #define LOGFAIL(HMTYPE, TESTTYPE) LOG("Incorrect value (" HMTYPE " hashmap failure) during " TESTTYPE \
-		" test at index %lu (got back %lu), aborting test.\n", i, val)
+		" test at index %"PRIu64" (got back %"PRIu64"), aborting test.\n", i, val)
 
 int32_t main(void) {
 	/* Test the usflib2 hashmap */
