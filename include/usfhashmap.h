@@ -25,6 +25,8 @@ usf_data usf_strhmget(usf_hashmap *hashmap, char *key);
 usf_data usf_inthmget(usf_hashmap *hashmap, uint64_t key);
 usf_data usf_strhmdel(usf_hashmap *hashmap, char *key);
 usf_data usf_inthmdel(usf_hashmap *hashmap, uint64_t key);
+usf_data *usf_strhmnext(usf_hashmap *hashmap, uint64_t *iter);
+usf_data *usf_inthmnext(usf_hashmap *hashmap, uint64_t *iter);
 void usf_resizestrhm(usf_hashmap *, uint64_t size);
 void usf_resizeinthm(usf_hashmap *hashmap, uint64_t size);
 void usf_freestrhm(usf_hashmap *hashmap);

@@ -168,6 +168,26 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, uint64_t key) {
 #undef TESTCASE
 }
 
+usf_data *usf_strhmnext(usf_hashmap *hashmap, uint64_t *iter) {
+	usf_data *entry;
+	do {
+		if (*iter >= hashmap->capacity) return NULL;
+		entry = hashmap->array[(*iter)++];
+	} while (entry == NULL || entry[0].p == NULL);
+
+	return entry;
+}
+
+usf_data *usf_inthmnext(usf_hashmap *hashmap, uint64_t *iter) {
+	usf_data *entry;
+	do {
+		if (*iter >= hashmap->capacity) return NULL;
+		entry = hashmap->array[(*iter)++];
+	} while (entry == NULL || entry == (usf_data *) hashmap);
+
+	return entry;
+}
+
 void usf_resizeinthm(usf_hashmap *hashmap, uint64_t size) {
 	uint64_t i, j, hash;
 	usf_data **oldarray, **newarray;

@@ -110,9 +110,7 @@ void usf_reversetxtlines(char **array, uint64_t len) {
 int usf_sreplace(char *s, char template, char replacement) {
 	/* Replace all occurences of char template with char replacement in a string
 	 * and return the number of occurences matched */
-
-    int n = 0;
-
+    int32_t n = 0;
     while((s = strchr(s, template)) != NULL) {
         *s++ = replacement;
         n++;

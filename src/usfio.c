@@ -11,7 +11,6 @@ void usf_printtxt(char **text, uint64_t len, FILE *stream) {
 char *usf_ftos(char *file, uint64_t *l) {
 	/* Reads a file file and returns contents as a single 0-terminated string,
 	 * with length in l, NULL if an error occured */
-
 	FILE *f = fopen(file, "r");
 	if (f == NULL) return NULL;
 

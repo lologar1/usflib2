@@ -29,7 +29,7 @@ int main() {
 	readout = usf_ftot("iotest_write.txt", &lines);
 	for (i = 0; i < lines; i++) {
 		if (strcmp(readout[i], textWellFormatted[i]) == 0)
-			printf("iotest: Success comparison for line %lu: %s\n", i, readout[i]);
+			printf("iotest: Success comparison for line %"PRIu64": %s\n", i, readout[i]);
 		else {
 			printf("%s", readout[i]);
 			printf("SEP\n");
