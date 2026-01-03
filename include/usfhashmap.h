@@ -1,16 +1,14 @@
 #ifndef USFHASHMAP_H
 #define USFHASHMAP_H
 
-#include "usfdata.h"
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include "usfdata.h"
+#include "usfmath.h"
 
 #define USF_HASHMAP_DEFAULTSIZE 16
 #define USF_HASHMAP_RESIZE_MULTIPLIER 2
-
-uint64_t usf_strhash(const char *str);
-uint64_t usf_hash(uint64_t val);
 
 typedef struct usf_hashmap {
 	usf_data **array; //Hash : value

@@ -43,6 +43,9 @@ double usf_elapsedtimens(struct timespec start, struct timespec end);
 			uint64_t: usf_clampu64 \
 		)((X), (LOW), (HIGH))
 
+uint64_t usf_strhash(const char *str);
+uint64_t usf_hash(uint64_t val);
+
 int32_t usf_indi32cmp(const void *a, const void *b);
 int32_t usf_indu32cmp(const void *a, const void *b);
 int32_t usf_indi64cmp(const void *a, const void *b);

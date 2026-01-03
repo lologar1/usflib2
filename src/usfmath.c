@@ -1,6 +1,24 @@
 #include "usfmath.h"
 
 /* General purpose file for miscellaneous functions */
+uint64_t usf_strhash(const char *str) {
+    uint64_t hash = 5381, c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+
+    return hash;
+}
+
+uint64_t usf_hash(uint64_t val) {
+	val += 137;
+	val ^= val >> 33;
+	val *= 0xFF51AFD7ED558CCD; //Prime
+	val ^= val >> 31;
+	val *= 0xA635194A4D16E3CB; //Prime
+	val ^= val >> 27;
+	return val;
+}
 
 double usf_elapsedtimes(struct timespec start, struct timespec end) {
 	/* Adjust time to nanosecond precision */
