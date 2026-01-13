@@ -1,5 +1,7 @@
 #include "usfdynarr.h"
 
+/* USFDYNARR IS DEPRECATED */
+
 usf_dynarr *usf_newda(uint64_t size) {
 	usf_dynarr *da = malloc(sizeof(usf_dynarr));
 	usf_data *array = malloc(sizeof(usf_data) * size);

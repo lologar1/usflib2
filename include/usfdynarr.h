@@ -1,3 +1,5 @@
+/* USFDYNARR IS DEPRECATED */
+
 #ifndef USFDYNARR_H
 #define USFDYNARR_H
 
