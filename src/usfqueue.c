@@ -1,71 +1,113 @@
 #include "usfqueue.h"
 
 usf_queue *usf_newqueue(void) {
-	/* Make new queue */
-	usf_queue *queue;
+	/* Creates a new non thread-safe usf_queue, initialized to 0.
+	 * Returns the created queue. */
 
-	queue = malloc(sizeof(usf_queue));
+	usf_queue *queue;
+	queue = usf_calloc(1, sizeof(usf_queue));
+
+	return queue;
+}
+
+usf_queue *usf_newqueue_ts(void) {
+	/* Creates a new thread-safe usf_queue, initialized to 0.
+	 * Returns the created queue, or NULL if a mutex cannot be created. */
+
+	usf_queue *queue;
+	queue = usf_malloc(sizeof(usf_queue));
+	queue->lock = usf_malloc(sizeof(pthread_mutex_t));
+	if (pthread_mutex_init(queue->lock, NULL)) { /* Default attributes */
+		usf_free(queue);
+		return NULL; /* mutex init failed */
+	}
 	queue->first = queue->last = NULL;
 
 	return queue;
 }
 
-usf_queue *usf_enqueue(usf_queue *queue, usf_data d) {
-	/* Enqueue to FIFO queue */
-	usf_queuenode *append;
+usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
+	/* Enqueues the given data to this FIFO queue.
+	 * Returns the queue, or NULL on error. */
 
 	if (queue == NULL) return NULL;
+	if (queue->lock) pthread_mutex_lock(queue->lock); /* Thread-safe lock */
 
-	append = malloc(sizeof(usf_queuenode));
-	append->data = d;
-	append->next = NULL; /* Last in line */
+	usf_queuenode *enqueue;
+	enqueue = usf_malloc(sizeof(usf_queuenode));
+	enqueue->data = data;
+	enqueue->next = NULL; /* Last in line */
 
-	if (queue->last == NULL) queue->first = queue->last = append; /* Was empty */
-	else {
-		queue->last->next = append;
-		queue->last = append;
+	if (queue->last == NULL) {
+		queue->first = queue->last = enqueue; /* First insertion */
+	} else {
+		queue->last->next = enqueue; /* Append */
+		queue->last = enqueue;
 	}
 
+	if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
 	return queue;
 }
 
 usf_data usf_dequeue(usf_queue *queue) {
-	/* Dequeue from FIFO queue */
-	usf_queuenode *node;
+	/* Returns dequeued data from this FIFO queue,
+	 * or USFNULL (zero) if it is inaccessible. */
+
+	if (queue == NULL) return USFNULL;
+	if (queue->lock) pthread_mutex_lock(queue->lock); /* Thread-safe lock */
+
+	usf_queuenode *dequeue;
+	if ((dequeue = queue->first) == NULL) {
+		if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
+		return USFNULL; /* Empty queue */
+	}
+
 	usf_data data;
+	data = dequeue->data;
 
-	node = queue->first;
-	if (queue == NULL || node == NULL) return USFNULL; /* Queue is NULL or is empty */
+	if ((queue->first = dequeue->next) == NULL) /* Bring next one in */
+		queue->last = NULL; /* Dequeue was last member */
+	usf_free(dequeue);
 
-	data = node->data; /* Retrieve data */
-
-	if ((queue->first = node->next) == NULL) queue->last = NULL; /* Adjust queue */
-	free(node);
-
+	if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
 	return data;
 }
 
 void usf_freequeue(usf_queue *queue) {
-	/* Frees all nodes and the queue itself */
-	usf_queuenode *node, *next;
+	/* Frees a usf_queue without calling usf_free on its values.
+	 * If queue is NULL, this function has no effect. */
 
+	if (queue == NULL) return;
+
+	usf_queuenode *node, *next;
 	for (node = queue->first; node; node = next) {
 		next = node->next;
-		free(node);
+		usf_free(node);
 	}
 
-	free(queue);
+	if (queue->lock) {
+		pthread_mutex_destroy(queue->lock);
+		usf_free(queue->lock);
+	}
+	usf_free(queue);
 }
 
 void usf_freequeueptr(usf_queue *queue) {
-	/* Frees all nodes and the queue itself, and its data */
-	usf_queuenode *node, *next;
+	/* Frees a usf_queue and calls usf_free on its values.
+	 * If queue is NULL, this function has no effect. */
 
+	if (queue == NULL) return;
+
+	usf_queuenode *node, *next;
 	for (node = queue->first; node; node = next) {
 		next = node->next;
-		free(node->data.p);
-		free(node);
+		usf_free(node->data.p);
+		usf_free(node);
 	}
 
-	free(queue);
+	if (queue->lock) {
+		pthread_mutex_destroy(queue->lock);
+		usf_free(queue->lock);
+	}
+	usf_free(queue);
 }

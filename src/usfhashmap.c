@@ -25,7 +25,7 @@ usf_hashmap *usf_newhmsz(u64 capacity) {
 
 usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 	/* Creates a new thread-safe usf_hashmap initialized to 0 of given capacity.
-	 * Returns the created hashmap. */
+	 * Returns the created hashmap, or NULL if a mutex cannot be created. */
 
 	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
 	hashmap->lock = usf_malloc(sizeof(pthread_mutex_t));
@@ -291,11 +291,13 @@ void usf_freestrhmptr(usf_hashmap *hashmap) {
 }
 
 void usf_freeinthm(usf_hashmap *hashmap) {
-	/* Frees an integer usf_hashmap without calling usf_free on its values. */
+	/* Frees an integer usf_hashmap without calling usf_free on its values.
+	 * If hashmap is NULL, this function has no effect. */
+
+	if (hashmap == NULL) return;
 
 	u64 i;
 	usf_data **array, *entry;
-
 	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
 		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
 		if ((void *) entry == (void *) hashmap) continue; /* Deleted */
@@ -311,11 +313,13 @@ void usf_freeinthm(usf_hashmap *hashmap) {
 }
 
 void usf_freeinthmptr(usf_hashmap *hashmap) {
-	/* Frees a string usf_hashmap and calls usf_free on its values. */
+	/* Frees a string usf_hashmap and calls usf_free on its values.
+	 * If hashmap is NULL, this function has no effect. */
+
+	if (hashmap == NULL) return;
 
 	u64 i;
 	usf_data **array, *entry;
-
 	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
 		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
 		if ((void *) entry == (void *) hashmap) continue; /* Deleted */

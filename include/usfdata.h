@@ -5,10 +5,10 @@
 
 #define USFNULL ((usf_data) { .u = 0 })
 #define USFTRUE ((usf_data) { .u = 1 })
-#define USFDATAP(d) ((usf_data) { .p = (d) })
-#define USFDATAU(d) ((usf_data) { .u = (d) })
-#define USFDATAI(d) ((usf_data) { .i = (d) })
-#define USFDATAD(d) ((usf_data) { .d = (d) })
+#define USFDATAP(D) ((usf_data) { .p = (D) })
+#define USFDATAU(D) ((usf_data) { .u = (D) })
+#define USFDATAI(D) ((usf_data) { .i = (D) })
+#define USFDATAD(D) ((usf_data) { .d = (D) })
 
 typedef union usf_data {
 	void *p;

@@ -1,8 +1,9 @@
 #include "usfmath.h"
 
-/* General purpose file for miscellaneous functions */
-uint64_t usf_strhash(const char *str) {
-    uint64_t hash = 5381, c;
+u64 usf_strhash(const char *str) {
+	/* Returns a 64-bit unsigned hash of the given string. */
+
+    u64 hash = 5381, c;
     while ((c = *str++)) {
         hash = ((hash << 5) + hash) + c;
     }
@@ -10,7 +11,9 @@ uint64_t usf_strhash(const char *str) {
     return hash;
 }
 
-uint64_t usf_hash(uint64_t val) {
+u64 usf_hash(u64 val) {
+	/* Returns a 64-bit unsigned hash of the given 64-bit unsigned value. */
+
 	val += 137;
 	val ^= val >> 33;
 	val *= 0xFF51AFD7ED558CCD; //Prime
@@ -20,60 +23,56 @@ uint64_t usf_hash(uint64_t val) {
 	return val;
 }
 
-double usf_elapsedtimes(struct timespec start, struct timespec end) {
-	/* Adjust time to nanosecond precision */
+f64 usf_elapsedtimes(struct timespec start, struct timespec end) {
+	/* Return time elapsed between start and end with nanosecond precision, in seconds. */
+
 	return (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000LU;
 }
 
-double usf_elapsedtimens(struct timespec start, struct timespec end) {
+f64 usf_elapsedtimens(struct timespec start, struct timespec end) {
+	/* Return time elapsed between start and end with nanosecond precision, in nanoseconds. */
+
 	return (end.tv_sec - start.tv_sec) * 1000000000LU + (end.tv_nsec - start.tv_nsec);
 }
 
-int32_t usf_indi32cmp(const void *a, const void *b) {
-	int32_t x = *((int32_t *) a), y = *((int32_t *) b);
-	return x > y ? 1 : x < y ? -1 : 0;
-}
-int32_t usf_indu32cmp(const void *a, const void *b) {
-	uint32_t x = *((uint32_t *) a), y = *((uint32_t *) b);
-	return x > y ? 1 : x < y ? -1 : 0;
-}
-int32_t usf_indi64cmp(const void *a, const void *b) {
-	int32_t x = *((int64_t *) a), y = *((int64_t *) b);
-	return x > y ? 1 : x < y ? -1 : 0;
-}
-int32_t usf_indu64cmp(const void *a, const void *b) {
-	int32_t x = *((uint64_t *) a), y = *((uint64_t *) b);
-	return x > y ? 1 : x < y ? -1 : 0;
-}
-int32_t usf_maxi32(int32_t a, int32_t b) { return a > b ? a : b; }
-uint32_t usf_maxu32(uint32_t a, uint32_t b) { return a > b ? a : b; }
-int64_t usf_maxi64(int64_t a, int64_t b) { return a > b ? a : b; }
-uint64_t usf_maxu64(uint64_t a, uint64_t b) { return a > b ? a : b; }
-int32_t usf_mini32(int32_t a, int32_t b) { return a < b ? a : b; }
-uint32_t usf_minu32(uint32_t a, uint32_t b) { return a < b ? a : b; }
-int64_t usf_mini64(int64_t a, int64_t b) { return a < b ? a : b; }
-uint64_t usf_minu64(uint64_t a, uint64_t b) { return a < b ? a : b; }
-float usf_clampf(float x, float low, float high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
-double usf_clampd(double x, double low, double high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
-int32_t usf_clampi32(int32_t x, int32_t low, int32_t high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
-uint32_t usf_clampu32(uint32_t x, uint32_t low, uint32_t high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
-int64_t usf_clampi64(int64_t x, int64_t low, int64_t high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
-uint64_t usf_clampu64(uint64_t x, uint64_t low, uint64_t high) {
-	if (low > high) USF_SWAP(low, high);
-	return x < low ? low : (x > high ? high : x);
-}
+/* Generic comparison functions */
+#define _USF_INDCMPFUNC(TYPE) \
+	i32 usf_indcmp##TYPE(const void *a, const void *b) { \
+		TYPE x = *((TYPE *) a); \
+		TYPE y = *((TYPE *) b); \
+		return x > y ? 1 : x < y ? -1 : 0; \
+	}
+_USF_INDCMPFUNC(i32)
+_USF_INDCMPFUNC(i64)
+_USF_INDCMPFUNC(u32)
+_USF_INDCMPFUNC(u64)
+#undef _USF_INDCMPFUNC
+
+#define _USF_MAXFUNC(TYPE) \
+	TYPE usf_max##TYPE(TYPE a, TYPE b) { return a > b ? a : b; }
+_USF_MAXFUNC(i32)
+_USF_MAXFUNC(i64)
+_USF_MAXFUNC(u32)
+_USF_MAXFUNC(u64)
+#undef _USF_MAXFUNC
+
+#define _USF_MINFUNC(TYPE) \
+	TYPE usf_min##TYPE(TYPE a, TYPE b) { return a < b ? a : b; }
+_USF_MINFUNC(i32)
+_USF_MINFUNC(i64)
+_USF_MINFUNC(u32)
+_USF_MINFUNC(u64)
+#undef _USF_MINFUNC
+
+#define _USF_CLAMPFUNC(TYPE) \
+	TYPE usf_clamp##TYPE(TYPE x, TYPE low, TYPE high) { \
+		if (low > high) USF_SWAP(low, high); \
+		return x < low ? low : (x > high ? high : x); \
+	}
+_USF_CLAMPFUNC(f32)
+_USF_CLAMPFUNC(f64)
+_USF_CLAMPFUNC(i32)
+_USF_CLAMPFUNC(i64)
+_USF_CLAMPFUNC(u32)
+_USF_CLAMPFUNC(u64)
+#undef _USF_CLAMPFUNC
