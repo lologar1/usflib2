@@ -1,6 +1,9 @@
 #ifndef USFLIB2_H
 #define USFLIB2_H
 
+#include "usfstd.h"
+#include "usfdata.h"
+
 #include "usfstring.h"
 #include "usfhashmap.h"
 #include "usfdynarr.h" /* DEPRECATED */
