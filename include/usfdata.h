@@ -1,7 +1,8 @@
 #ifndef USFDATA_H
 #define USFDATA_H
 
-#include <stdint.h>
+#include "usfstd.h"
+
 #define USFNULL ((usf_data) { .u = 0 })
 #define USFTRUE ((usf_data) { .u = 1 })
 #define USFDATAP(d) ((usf_data) { .p = (d) })
@@ -11,9 +12,9 @@
 
 typedef union usf_data {
 	void *p;
-	uint64_t u;
-	int64_t i;
-	double d;
+	u64 u;
+	i64 i;
+	f64 d;
 } usf_data;
 
 #endif

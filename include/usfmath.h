@@ -1,12 +1,12 @@
 #ifndef USFMATH_H
 #define USFMATH_H
 
-#include <stdint.h>
 #include <math.h>
 #include <time.h>
+#include "usfstd.h"
 
-double usf_elapsedtimes(struct timespec start, struct timespec end);
-double usf_elapsedtimens(struct timespec start, struct timespec end);
+f64 usf_elapsedtimes(struct timespec start, struct timespec end);
+f64 usf_elapsedtimens(struct timespec start, struct timespec end);
 
 #define USF_SWAP(A, B) do { \
 	__typeof__(A) _TMP = (A); \
@@ -15,54 +15,54 @@ double usf_elapsedtimens(struct timespec start, struct timespec end);
 
 #define USF_MAX(A, B) \
 	_Generic((A), \
-			float: fmaxf, \
-			double: fmax, \
-			int32_t: usf_maxi32, \
-			uint32_t: usf_maxu32, \
-			int64_t: usf_maxi64, \
-			uint64_t: usf_maxu64 \
+			f32: fmaxf, \
+			f64: fmax, \
+			i32: usf_maxi32, \
+			u32: usf_maxu32, \
+			i64: usf_maxi64, \
+			u64: usf_maxu64 \
 		)((A), (B))
 
 #define USF_MIN(A, B) \
 	_Generic((A), \
-			float: fminf, \
-			double: fmin, \
-			int32_t: usf_mini32, \
-			uint32_t: usf_minu32, \
-			int64_t: usf_mini64, \
-			uint64_t: usf_minu64 \
+			f32: fminf, \
+			f64: fmin, \
+			i32: usf_mini32, \
+			u32: usf_minu32, \
+			i64: usf_mini64, \
+			u64: usf_minu64 \
 		)((A), (B))
 
 #define USF_CLAMP(X, LOW, HIGH) \
 	_Generic((X), \
-			float: usf_clampf, \
-			double: usf_clampd, \
-			int32_t: usf_clampi32, \
-			uint32_t: usf_clampu32, \
-			int64_t: usf_clampi64, \
-			uint64_t: usf_clampu64 \
+			f32: usf_clampf, \
+			f64: usf_clampd, \
+			i32: usf_clampi32, \
+			u32: usf_clampu32, \
+			i64: usf_clampi64, \
+			u64: usf_clampu64 \
 		)((X), (LOW), (HIGH))
 
-uint64_t usf_strhash(const char *str);
-uint64_t usf_hash(uint64_t val);
+u64 usf_strhash(const char *str);
+u64 usf_hash(u64 val);
 
-int32_t usf_indi32cmp(const void *a, const void *b);
-int32_t usf_indu32cmp(const void *a, const void *b);
-int32_t usf_indi64cmp(const void *a, const void *b);
-int32_t usf_indu64cmp(const void *a, const void *b);
+i32 usf_indi32cmp(const void *a, const void *b);
+i32 usf_indu32cmp(const void *a, const void *b);
+i32 usf_indi64cmp(const void *a, const void *b);
+i32 usf_indu64cmp(const void *a, const void *b);
 
-int32_t usf_maxi32(int32_t a, int32_t b);
-uint32_t usf_maxu32(uint32_t a, uint32_t b);
-int64_t usf_maxi64(int64_t a, int64_t b);
-uint64_t usf_maxu64(uint64_t a, uint64_t b);
-int32_t usf_mini32(int32_t a, int32_t b);
-uint32_t usf_minu32(uint32_t a, uint32_t b);
-int64_t usf_mini64(int64_t a, int64_t b);
-uint64_t usf_minu64(uint64_t a, uint64_t b);
-float usf_clampf(float x, float low, float high);
-double usf_clampd(double x, double low, double high);
-int32_t usf_clampi32(int32_t x, int32_t low, int32_t high);
-uint32_t usf_clampu32(uint32_t x, uint32_t low, uint32_t high);
-int64_t usf_clampi64(int64_t x, int64_t low, int64_t high);
-uint64_t usf_clampu64(uint64_t x, uint64_t low, uint64_t high);
+i32 usf_maxi32(i32 a, i32 b);
+u32 usf_maxu32(u32 a, u32 b);
+i64 usf_maxi64(i64 a, i64 b);
+u64 usf_maxu64(u64 a, u64 b);
+i32 usf_mini32(i32 a, i32 b);
+u32 usf_minu32(u32 a, u32 b);
+i64 usf_mini64(i64 a, i64 b);
+u64 usf_minu64(u64 a, u64 b);
+f32 usf_clampf(f32 x, f32 low, f32 high);
+f64 usf_clampd(f64 x, f64 low, f64 high);
+i32 usf_clampi32(i32 x, i32 low, i32 high);
+u32 usf_clampu32(u32 x, u32 low, u32 high);
+i64 usf_clampi64(i64 x, i64 low, i64 high);
+u64 usf_clampu64(u64 x, u64 low, u64 high);
 #endif

@@ -1,7 +1,7 @@
 #include "usfstring.h"
 
 int usf_indstrcmp(const void *a, const void *b) {
-	/* Wrapper for strcmp for qsort */
+	/* strcmp wrapper for qsort */
 
 	char **x = (char **) a;
 	char **y = (char **) b;
@@ -17,7 +17,7 @@ int usf_indstrcmp(const void *a, const void *b) {
 }
 
 int usf_indstrlen(const void *a, const void *b) {
-	/* Wrapper for strlen for qsort */
+	/* strlen wrapper for qsort */
 
 	char **x = (char **) a;
 	char **y = (char **) b;
@@ -33,153 +33,126 @@ int usf_indstrlen(const void *a, const void *b) {
 }
 
 char *usf_sstartswith(char *base, char *prefix) {
-	/* Test if a string starts with another and return substring, or null */
+	/* Returns a pointer to the first char in base after the prefix (excluding terminating \0),
+	 * or NULL if base does not start with prefix. */
 
 	if (base == NULL || prefix == NULL) return NULL;
 
-	while (*prefix) //Up to either \0 char
-		if (*prefix++ != *base++) //Compare
-			return NULL;
+	while (*prefix) /* If a char in prefix mismatches, condition failed */
+		if (*prefix++ != *base++) return NULL;
+
 	return base;
 }
 
-int usf_sendswith(char *base, char *suffix) {
-	/* Test if a string ends with another */
+char *usf_sendswith(char *base, char *suffix) {
+	/* Returns a pointer to the first char in base before the suffix,
+	 * or NULL if base does not end with suffix. */
 
-	int offset;
+	i64 offset;
+	if ((offset = strlen(base) - strlen(suffix)) < 0) return NULL;
 
-	offset = strlen(base) - strlen(suffix);
+	char *start;
+	start = base + offset;
 
-	//Is bigger; doesn't endwith
-	if (offset < 0) return 0;
-
-	return !strcmp(base + offset, suffix);
+	return strcmp(start, suffix) ? NULL : start;
 }
 
-uint64_t usf_scount(char *str, char c) {
-	/* Count the number of occurences of char c in string str */
+u64 usf_scount(char *str, char c) {
+	/* Returns the number of occurrences of char c in string str. */
 
-	uint64_t count = 0;
-
-	while (*str) {
-		if (*str == c)
-			count++;
-		str++;
-	}
+	u64 count;
+	for (count = 0; *str; str++)
+		if (*str == c) count++;
 
 	return count;
 }
 
-int usf_txtcontainsline(char **array, uint64_t len, char *string) {
-	/* Check if a text contains a certain line (string) */
+i32 usf_txtcontainsline(char **array, u64 len, char *string) {
+	/* Returns 1 if the string array of length len contains string string, otherwise 0 */
 
-	uint64_t i;
+	if (string == NULL) return 0;
 
-	if (string == NULL)
-		return 0;
-
+	u64 i;
 	for (i = 0; i < len; i++) {
-		if (array[i] == NULL)
-			continue;
-
-		if (!strcmp(array[i], string))
-			return 1;
+		if (array[i] == NULL) continue;
+		if (!strcmp(array[i], string)) return 1; /* Found match */
 	}
 
 	return 0;
 }
 
-void usf_reversetxtlines(char **array, uint64_t len) {
-	/* Reverse all lines in a text */
+void usf_reversetxtlines(char **array, u64 len) {
+	/* Reverses the order of all the lines in the string array of length len. */
 
-	uint64_t i = 0, j = len - 1;
-	char *temp;
-
-	while (i < j) {
-		//Swap
-		temp = array[j];
-		array[j] = array[i];
-		array[i] = temp;
-
-		//Offset pointers
-		j--;
-		i++;
-	}
+	u64 i, j;
+	for (i = 0, j = len - 1; i < j; i++, j--)
+		USF_SWAP(array[i], array[j]);
 }
 
-int usf_sreplace(char *s, char template, char replacement) {
-	/* Replace all occurences of char template with char replacement in a string
-	 * and return the number of occurences matched */
-    int32_t n = 0;
-    while((s = strchr(s, template)) != NULL) {
-        *s++ = replacement;
-        n++;
-    }
+u64 usf_sreplace(char *str, char template, char replacement) {
+	/* Replaces all occurrences of char template with char replacement in string str
+	 * and return the number of successful substitutions */
 
-    return n;
+    u64 substitutions;
+	for (substitutions = 0; (str = strchr(str, template)) != NULL; substitutions++)
+        *str++ = replacement;
+
+    return substitutions;
 }
 
-char **usf_scsplit(char *str, char sep, uint64_t *count) {
-	/* Splits a string along a given char and returns an array of pointers to the
-	 * different substrings, 0-terminated (including the string itself, which is
-	 * the first substring). Doesn't allocate for substrings.
-	 * Count is the number of substrings, so 1 more than the number of separators. */
+char **usf_scsplit(char *str, char sep, u64 *count) {
+	/* Splits the given string str on each character sep matched and returns an array of
+	 * pointers to the resulting 0-terminated substringns.
+	 * count is set to the number of substrings (1 more than the number of matched separators).
+	 * No allocations are performed for the substrings. */
 
-	uint64_t nsubstrings;
+	u64 nsubstrings;
 	nsubstrings = usf_scount(str, sep) + 1;
 
 	if (count) *count = nsubstrings;
 
-	uint64_t i;
 	char **substrings;
+	substrings = usf_malloc(nsubstrings * sizeof(char *));
 
-	substrings = malloc(nsubstrings * sizeof(char *));
-
+	u64 i;
 	for (i = 0; i < nsubstrings; i++) {
 		substrings[i] = str; /* Place substring */
-		str = strchr(str, sep);
-		if (str) *str++ = '\0'; /* Terminate and move to next substring */
+		if ((str = strchr(str, sep))) *str++ = '\0'; /* Terminate if next separator exists */
 	}
 
 	return substrings;
 }
 
-int usf_strcat(char *destination, size_t size, uint32_t n, ...) {
-	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
-	size_t catsize = 0;
+i32 usf_strcat(char *destination, u64 size, u64 n, ...) {
+	/* Variadic wrapper for usf_vstrcat */
 
-	va_list sizecheck, args;
+	va_list args;
 	va_start(args, n);
+
+	i32 retval;
+	retval = usf_vstrcat(destination, size, n, args);
+
+	va_end(args);
+	return retval;
+}
+
+i32 usf_vstrcat(char *destination, u64 size, u64 n, va_list args) {
+	/* Concatenates n strings into destination (without the \0 terminator), which can hold
+	 * size bytes at most. If the final string is longer than size (including the \0 terminator),
+	 * this function returns -1. Otherwise, it returns 0. */
+
+	va_list sizecheck;
 	va_copy(sizecheck, args);
 
-	uint32_t i;
-	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
+	u64 catsize, i;
+	for (catsize = i = 0; i < n; i++) catsize += strlen(va_arg(sizecheck, char *));
 	va_end(sizecheck);
 
-	if (++catsize > size) return 0; /* Include 0 terminator */
+	if (++catsize > size) return -1;
 
 	strcpy(destination, va_arg(args, char *));
 	for (i = 1; i < n; i++) strcat(destination, va_arg(args, char *));
 	va_end(args);
 
-	return 1;
-}
-
-int usf_vstrcat(char *destination, size_t size, uint32_t n, va_list args) {
-	/* Concatenates multiple strings into destination, returning 1 if success else 0 */
-	size_t catsize = 0;
-
-	va_list sizecheck;
-	va_copy(sizecheck, args);
-
-	uint32_t i;
-	for (i = 0; i < n; i++)	catsize += strlen(va_arg(sizecheck, char *));
-	va_end(sizecheck);
-
-	if (++catsize > size) return 0; /* Include 0 terminator */
-
-	strcpy(destination, va_arg(args, char *));
-	for (i = 1; i < n; i++) strcat(destination, va_arg(args, char *));
-
-	return 1;
+	return 0;
 }

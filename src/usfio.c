@@ -1,134 +1,141 @@
 #include "usfio.h"
 
-void usf_printtxt(char **text, uint64_t len, FILE *stream) {
+void usf_printtxt(char **text, u64 len, FILE *stream) {
 	/* Prints an array of strings of length len to stream stream */
-	uint64_t i;
 
-	for (i = 0; i < len; i++)
-		fprintf(stream, "%s", text[i]);
+	for (u64 i = 0; i < len; i++) fprintf(stream, "%s", text[i]);
 }
 
-char *usf_ftos(char *file, uint64_t *l) {
-	/* Reads a file file and returns contents as a single 0-terminated string,
-	 * with length in l, NULL if an error occured */
-	FILE *f = fopen(file, "r");
-	if (f == NULL) return NULL;
+char *usf_ftos(char *file, u64 *l) {
+	/* Reads a file with options "r" and returns the content as a single
+	 * 0-terminated string of length l, or NULL if an error occurred. */
+
+	FILE *f;
+	if ((f = fopen(file, "r")) == NULL) return NULL; /* Failed to open */
 
 	if (fseek(f, 0, SEEK_END) != 0) {
 		fclose(f);
 		return NULL; /* Error while seeking end of file */
 	}
 
-	uint64_t length = ftell(f);
-	if (length <= 0) {
-		fclose(f);
-		return NULL;
-	}
+	u64 length;
+	length = ftell(f);
 
-	rewind(f); /* Go back to start */
+	rewind(f); /* Set file position to start */
 
-	char *str = malloc(length + 1); /* Adjust for terminator */
+	char *str;
+	str = usf_malloc(length + 1); /* Adjust for \0 terminator */
 
-	if (fread(str, 1, length, f) == 0) {
-		fclose(f);
-		free(str);
+	if (fread(str, sizeof(char), length, f) != length) {
+		fclose(f); /* Failed to read same number of bytes as file length */
+		usf_free(str);
 		return NULL;
 	}
 
 	str[length] = '\0'; /* Terminate */
 
 	fclose(f);
-	if (l != NULL) *l = length;
+	if (l) *l = length;
 
 	return str;
 }
 
-char **usf_ftot(char *file, uint64_t *l) {
-	/* Reads a file and returns a 2D array of pointers to lines (incl. \n) */
+char **usf_ftot(char *file, u64 *l) {
+	/* Reads a file with options "r" and returns an array of pointers to its lines, excluding
+	 * the \n character, or NULL if an error occurred. Each line is allocated separately.
+	 * l is the number of lines present in the array.
+	 * The file should contain at least one line (\n character).
+	 * Note: this function should only be called when the underlying memory representation of the
+	 * text array matters. Otherwise, usf_ftost should be called. */
 
 	char *filestring;
-	uint64_t fslen;
+	if ((filestring = usf_ftos(file, NULL)) == NULL) return NULL; /* usf_ftos failed */
 
-	if ((filestring = usf_ftos(file, &fslen)) == NULL)
-		return NULL;
-
-	uint64_t nlines;
+	u64 nlines;
 	nlines = usf_scount(filestring, '\n');
 
 	if (l) *l = nlines;
 
-	char **txt, **t, *s, *fs;
-	txt = malloc(sizeof(char *) * nlines);
+	u64 linelen;
+	char **text, **textptr, *line, *filestringptr;
+	text = usf_malloc(sizeof(char *) * nlines);
 
-	uint64_t linelen;
-	for (fs = filestring, t = txt; nlines > 0; nlines--) {
-		/* For every line, find its start, alloc, copy and keep pointer in txt */
+	for (filestringptr = filestring, textptr = text; nlines > 0; nlines--) {
+		linelen = strchr(filestringptr, '\n') - filestringptr + 1; /* Space for all chars plus \0 */
+		line = usf_malloc(linelen);
+		memcpy(line, filestringptr, linelen);
+		line[linelen - 1] = '\0';
 
-		linelen = strchr(fs, '\n') - fs + 2; /* Space for all chars until \n, plus it and \0 */
-		s = malloc(linelen);
-		memcpy(s, fs, linelen);
-		s[linelen - 1] = '\0'; /* Cap off */
-
-		fs += linelen - 1; /* \0 isn't present in filestring */
-		*t++ = s;
+		filestringptr += linelen; /* \0 takes the place of \n so linelen is the correct offset */
+		*textptr++ = line; /* Add to text array */
 	}
 
-	free(filestring);
+	usf_free(filestring);
 
-	return txt;
+	return text;
 }
 
-char **usf_ftost(char *file, uint64_t *l) {
+char **usf_ftost(char *file, u64 *l) {
+	/* Reads a file with options "r" and returns an array of pointers to its lines, excluding
+	 * the \n character, or NULL if an error ocurred. Each line is not separately allocated.
+	 * l is the number of lines present in the array.
+	 * The file should contain at least one line (\n character). */
+
+	char *filestring;
+	if ((filestring = usf_ftos(file, NULL)) == NULL) return NULL; /* usf_ftos failed */
+
 	char **stringtext;
-	stringtext = usf_scsplit(usf_ftos(file, NULL), '\n', l);
-	--*l; /* scsplit returns number of substrings, so account for last empty substring (terminating \n) */
+	stringtext = usf_scsplit(filestring, '\n', l);
+	--*l; /* omit last empty substring from usf_scsplit */
 
 	return stringtext;
 }
 
-void usf_freetxt(char **text, uint64_t nlines) {
-	/* Free a text array */
+void usf_freetxt(char **text, u64 nlines) {
+	/* Frees an array of strings of size nlines. */
 
-	uint64_t i;
-
+	u64 i;
 	for (i = 0; i < nlines; i++)
-		free(text[i]);
-	free(text);
+		usf_free(text[i]);
+	usf_free(text);
 }
 
-size_t usf_btof(char *file, void *pointer, size_t size) {
-	/* Dumps size bytes from pointer into binary file file, returning the number of bytes successfully written */
-	FILE *f;
-	size_t written;
+u64 usf_btof(char *file, void *pointer, u64 size) {
+	/* Writes size bytes from pointer to file with options "wb".
+	 * Returns the number of bytes written, or 0 on error. */
 
-	f = fopen(file, "wb");
-	written = fwrite(pointer, 1, size, f);
+	FILE *f;
+	if ((f = fopen(file, "wb")) == NULL) return 0; /* Failed to open */
+
+	u64 written;
+	written = fwrite(pointer, sizeof(char), size, f);
 	fclose(f);
 
-	return written;
+	return written == size ? written : 0; /* 0 if failed to write */
 }
 
-void *usf_ftob(char *file, size_t *size) {
-	/* Reads a binary file and returns a pointer to its data, with size (in bytes) written to size */
+void *usf_ftob(char *file, u64 *size) {
+	/* Reads a binary file with options "rb" and returns a pointer to its
+	 * content or NULL if an error occurred.
+	 * size is set to the size in bytes of the file. */
+
 	FILE *f;
-	void *array;
-	size_t sz;
+	if ((f = fopen(file, "rb")) == NULL) return NULL; /* Failed to open */
 
-	if ((f = fopen(file, "rb")) == NULL) return NULL;
-
-	/* Query file size in bytes */
+	u64 filesize; /* Query file size in bytes */
 	fseek(f, 0, SEEK_END);
-	sz = ftell(f);
+	filesize = ftell(f);
 	fseek(f, 0, SEEK_SET);
 
-	array = malloc(sz);
-	if (fread(array, 1, sz, f) != sz) {
-		/* Did not read as many bytes as size : error occured */
-		free(array);
+	void *array;
+	array = usf_malloc(filesize);
+	if (fread(array, sizeof(char), filesize, f) != filesize) { /* Failed to read */
+		usf_free(array);
 		fclose(f);
 		return NULL;
 	}
-	*size = sz;
+
+	if (size) *size = filesize;
 	fclose(f);
 
 	return array;

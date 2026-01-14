@@ -5,6 +5,7 @@ TEST_DIR := tests
 
 CC := gcc
 CFLAGS := -Wall -Wextra -pedantic -O2 -g
+LINKS := -lc -lpthread
 INCLUDES := -I$(INC_DIR)
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
@@ -17,7 +18,7 @@ all: $(OBJS)
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(OBJ_DIR)
-	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@ $(LINKS)
 
 test: $(TEST_BINS)
 

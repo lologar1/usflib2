@@ -48,7 +48,7 @@ int32_t main(void) {
 		if (val != i) { LOGFAIL("integer", "deletion"); break; }
 	}
 
-	usf_freestrhm(strhm); usf_freehm(inthm); /* Cleanup */
+	usf_freestrhm(strhm); usf_freeinthm(inthm); /* Cleanup */
 	LOG("OK!\n");
 
 	LOG("Testing integer hashmap access time for sizes 2^n up to %"PRIu64"\n", HMTEST_ACCESS_TEST_MAXSIZE);
@@ -70,7 +70,7 @@ int32_t main(void) {
 			cycles += end - start;
 		}
 
-		usf_freehm(inthm);
+		usf_freeinthm(inthm);
 
 		LOG("Size %"PRIu64" took %f CPU cycles per access\n", i, (double) cycles / (HMTEST_SAMPLE_SIZE * i));
 	}

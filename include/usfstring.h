@@ -2,20 +2,21 @@
 #define USFSTRING_H
 
 #include <string.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <stdarg.h>
+#include "usfstd.h"
+#include "usfmath.h"
 
 int usf_indstrcmp(const void *a, const void *b);
 int usf_indstrlen(const void *a, const void *b);
+
 char *usf_sstartswith(char *base, char *prefix);
-int usf_sendswith(char *base, char *suffix);
-uint64_t usf_scount(char *str, char c);
-int usf_txtcontainsline(char **array, uint64_t len, char *string);
-void usf_reversetxtlines(char **array, uint64_t len);
-int usf_sreplace(char *s, char tmpl, char replacement);
-char **usf_scsplit(char *str, char sep, uint64_t *count);
-int usf_strcat(char *destination, size_t size, uint32_t n, ...);
-int usf_vstrcat(char *destination, size_t size, uint32_t n, va_list args);
+char *usf_sendswith(char *base, char *suffix);
+u64 usf_scount(char *str, char c);
+i32 usf_txtcontainsline(char **array, u64 len, char *string);
+void usf_reversetxtlines(char **array, u64 len);
+u64 usf_sreplace(char *str, char tmpl, char replacement);
+char **usf_scsplit(char *str, char sep, u64 *count);
+i32 usf_strcat(char *destination, u64 size, u64 n, ...);
+i32 usf_vstrcat(char *destination, u64 size, u64 n, va_list args);
 
 #endif
