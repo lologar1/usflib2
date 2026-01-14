@@ -1,11 +1,5 @@
 #include "usfio.h"
 
-void usf_printtxt(char **text, u64 len, FILE *stream) {
-	/* Prints an array of strings of length len to stream stream */
-
-	for (u64 i = 0; i < len; i++) fprintf(stream, "%s", text[i]);
-}
-
 char *usf_ftos(char *file, u64 *l) {
 	/* Reads a file with options "r" and returns the content as a single
 	 * 0-terminated string of length l, or NULL if an error occurred. */
@@ -91,29 +85,6 @@ char **usf_ftost(char *file, u64 *l) {
 	return stringtext;
 }
 
-void usf_freetxt(char **text, u64 nlines) {
-	/* Frees an array of strings of size nlines. */
-
-	u64 i;
-	for (i = 0; i < nlines; i++)
-		usf_free(text[i]);
-	usf_free(text);
-}
-
-u64 usf_btof(char *file, void *pointer, u64 size) {
-	/* Writes size bytes from pointer to file with options "wb".
-	 * Returns the number of bytes written, or 0 on error. */
-
-	FILE *f;
-	if ((f = fopen(file, "wb")) == NULL) return 0; /* Failed to open */
-
-	u64 written;
-	written = fwrite(pointer, sizeof(char), size, f);
-	fclose(f);
-
-	return written == size ? written : 0; /* 0 if failed to write */
-}
-
 void *usf_ftob(char *file, u64 *size) {
 	/* Reads a binary file with options "rb" and returns a pointer to its
 	 * content or NULL if an error occurred.
@@ -139,4 +110,33 @@ void *usf_ftob(char *file, u64 *size) {
 	fclose(f);
 
 	return array;
+}
+
+u64 usf_btof(char *file, void *pointer, u64 size) {
+	/* Writes size bytes from pointer to file with options "wb".
+	 * Returns the number of bytes written, or 0 on error. */
+
+	FILE *f;
+	if ((f = fopen(file, "wb")) == NULL) return 0; /* Failed to open */
+
+	u64 written;
+	written = fwrite(pointer, sizeof(char), size, f);
+	fclose(f);
+
+	return written == size ? written : 0; /* 0 if failed to write */
+}
+
+void usf_printtxt(char **text, u64 len, FILE *stream) {
+	/* Prints an array of strings of length len to stream stream */
+
+	for (u64 i = 0; i < len; i++) fprintf(stream, "%s", text[i]);
+}
+
+void usf_freetxt(char **text, u64 nlines) {
+	/* Frees an array of strings of size nlines. */
+
+	u64 i;
+	for (i = 0; i < nlines; i++)
+		usf_free(text[i]);
+	usf_free(text);
 }

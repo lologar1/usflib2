@@ -44,8 +44,14 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
  * _HASHMAP		reference to usf_hashmap *
  * _KEY			reference to the key (uint64_t or string)
  * _HASHFUNC	hashing function
- * _ACCESS		access code
+ * _ACCESS		statements to execute for each potential entry
+ *
+ * _I			full 64-bit hash
+ * _HASH		hashed index into underlying array
+ * _CAP			hashmap capacity
+ * _ENTRY		current hashmap entry being accessed
  * */
+
 #define HMACCESS(_HASHMAP, _KEY, _HASHFUNC, _ACCESS) \
 	u64 _I, _HASH, _CAP; \
 	usf_data *_ENTRY; \
