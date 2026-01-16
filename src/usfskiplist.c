@@ -18,6 +18,7 @@ usf_skiplist *usf_newsk_ts(void) {
 	skiplist = usf_calloc(1, sizeof(usf_skiplist));
 	skiplist->lock = usf_malloc(sizeof(pthread_mutex_t));
 	if (pthread_mutex_init(skiplist->lock, NULL)) { /* Default attributes */
+		usf_free(skiplist->lock);
 		usf_free(skiplist);
 		return NULL; /* mutex init failed */
 	}
@@ -36,7 +37,7 @@ usf_skiplist *usf_newsk_ts(void) {
  * _NODE		current skipnode being accessed
  * */
 
-#define SKACCESS(_SKIPLIST, _INDEX, _ACCESS, _LEVELSHIFT) \
+#define _USF_SKACCESS(_SKIPLIST, _INDEX, _ACCESS, _LEVELSHIFT) \
 	i32 _LEVEL; \
 	usf_skipnode **_SKIPFRAME, *_NODE; \
 	for (_SKIPFRAME = _SKIPLIST->base, _LEVEL = USF_SKIPLIST_FRAMESIZE - 1; _LEVEL >= 0; _LEVEL--) { \
@@ -51,7 +52,7 @@ usf_skiplist *usf_newsk_ts(void) {
 	}
 
 usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
-	/* Inserts the given data at virtual index i in the skiplist.
+	/* Sets the given data at virtual index i in the skiplist.
 	 * Returns the skiplist, or NULL if an error occurred. */
 
 	if (skiplist == NULL) return NULL;
@@ -62,7 +63,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
 	_NODE->data = data; \
 	if (_SKIPLIST->lock) pthread_mutex_unlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _SKIPLIST;
-	SKACCESS(skiplist, i, _ACCESS, skiplinks[_LEVEL] = &_SKIPFRAME[_LEVEL]);
+	_USF_SKACCESS(skiplist, i, _ACCESS, skiplinks[_LEVEL] = &_SKIPFRAME[_LEVEL]);
 #undef _ACCESS
 
 	_NODE = usf_calloc(1, sizeof(usf_skipnode));
@@ -89,7 +90,7 @@ usf_data usf_skget(usf_skiplist *skiplist, u64 i) {
 #define _ACCESS(_SKIPLIST, _INDEX) \
 	if (_SKIPLIST->lock) pthread_mutex_unlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _NODE->data;
-	SKACCESS(skiplist, i, _ACCESS, (void) 0);
+	_USF_SKACCESS(skiplist, i, _ACCESS, (void) 0);
 #undef _ACCESS
 
 	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
@@ -106,7 +107,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 #define _ACCESS(_SKIPLIST, _INDEX) \
 	_SKIPFRAME[_LEVEL] = _NODE->nextnodes[_LEVEL]; /* Unlink */ \
 	break;
-	SKACCESS(skiplist, i, _ACCESS, (void) 0);
+	_USF_SKACCESS(skiplist, i, _ACCESS, (void) 0);
 #undef _ACCESS
 
 	usf_data data;
@@ -118,6 +119,8 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
 	return data;
 }
+
+#undef _USF_SKACCESS
 
 void usf_freesk(usf_skiplist *skiplist) {
 	/* Frees a skiplist without calling usf_free on its values.

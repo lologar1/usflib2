@@ -11,10 +11,13 @@
 #define USFDATAD(D) ((usf_data) { .d = (D) })
 
 typedef union usf_data {
-	void *p;
 	u64 u;
+	u64 u64;
 	i64 i;
+	i64 i64;
 	f64 d;
+	f64 f64;
+	void *p;
 } usf_data;
 
 #endif

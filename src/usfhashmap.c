@@ -2,11 +2,13 @@
 
 usf_hashmap *usf_newhm(void) {
 	/* Wrapper for creating default-sized non thread-safe hashmaps. */
+
 	return usf_newhmsz(USF_HASHMAP_DEFAULTSIZE);
 }
 
 usf_hashmap *usf_newhm_ts(void) {
 	/* Wrapper for creating default-sized thread-safe hashmaps. */
+
 	return usf_newhmsz_ts(USF_HASHMAP_DEFAULTSIZE);
 }
 
@@ -16,9 +18,9 @@ usf_hashmap *usf_newhmsz(u64 capacity) {
 
 	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
 	hashmap->lock = NULL; /* Not thread-safe */
+    hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
 	hashmap->size = 0; /* Empty at start */
 	hashmap->capacity = capacity;
-    hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
 
 	return hashmap;
 }
@@ -30,12 +32,13 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
 	hashmap->lock = usf_malloc(sizeof(pthread_mutex_t));
 	if (pthread_mutex_init(hashmap->lock, NULL)) { /* Default attributes */
+		usf_free(hashmap->lock);
 		usf_free(hashmap);
 		return NULL; /* mutex init failed */
 	}
+    hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
 	hashmap->size = 0; /* Empty at start */
 	hashmap->capacity = capacity;
-    hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
 
 	return hashmap;
 }
@@ -52,7 +55,7 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
  * _ENTRY		current hashmap entry being accessed
  * */
 
-#define HMACCESS(_HASHMAP, _KEY, _HASHFUNC, _ACCESS) \
+#define _USF_HMACCESS(_HASHMAP, _KEY, _HASHFUNC, _ACCESS) \
 	u64 _I, _HASH, _CAP; \
 	usf_data *_ENTRY; \
 	_CAP = _HASHMAP->capacity; \
@@ -89,7 +92,7 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, char *key, usf_data value) {
 		_ENTRY[1] = value; \
 		break; /* Successfully put */ \
 	}
-	HMACCESS(hashmap, key, usf_strhash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
 
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */
@@ -118,7 +121,7 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 		_ENTRY[1] = value; \
 		break; /* Successfully put */ \
 	}
-	HMACCESS(hashmap, key, usf_hash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
 
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */
@@ -142,7 +145,7 @@ usf_data usf_strhmget(usf_hashmap *hashmap, char *key) {
 	\
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
 	return _ENTRY[1]; /* Found */
-	HMACCESS(hashmap, key, usf_strhash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
 }
 
@@ -163,7 +166,7 @@ usf_data usf_inthmget(usf_hashmap *hashmap, u64 key) {
 	\
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
 	return _ENTRY[1]; /* Found */
-	HMACCESS(hashmap, key, usf_hash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
 }
 
@@ -189,7 +192,7 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, char *key) {
 	_ENTRY[0] = USFNULL; /* Delete entry */ \
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
-	HMACCESS(hashmap, key, usf_strhash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
 }
 
@@ -215,11 +218,11 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 	_HASHMAP->array[_HASH] = (usf_data *) _HASHMAP; /* Use hashmap pointer as deleted marker */ \
 	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
-	HMACCESS(hashmap, key, usf_hash, _ACCESS);
+	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
 }
 
-#undef HMACCESS
+#undef _USF_HMACCESS
 
 usf_data *usf_strhmnext(usf_hashmap *hashmap, u64 *iter) {
 	/* Returns the next 64-bit usf_data value in the string hashmap from underlying array index iter.
