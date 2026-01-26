@@ -36,10 +36,10 @@ f64 usf_elapsedtimens(struct timespec start, struct timespec end) {
 }
 
 /* Generic comparison functions */
-#define _USF_INDCMPFUNC(TYPE) \
-	i32 usf_indcmp##TYPE(const void *a, const void *b) { \
-		TYPE x = *((TYPE *) a); \
-		TYPE y = *((TYPE *) b); \
+#define _USF_INDCMPFUNC(_TYPE) \
+	i32 usf_indcmp##_TYPE(const void *a, const void *b) { \
+		_TYPE x = *((_TYPE *) a); \
+		_TYPE y = *((_TYPE *) b); \
 		return x > y ? 1 : x < y ? -1 : 0; \
 	}
 _USF_INDCMPFUNC(i32)
@@ -48,24 +48,30 @@ _USF_INDCMPFUNC(u32)
 _USF_INDCMPFUNC(u64)
 #undef _USF_INDCMPFUNC
 
-#define _USF_MAXFUNC(TYPE) \
-	TYPE usf_max##TYPE(TYPE a, TYPE b) { return a > b ? a : b; }
+#define _USF_ABSFUNC(_TYPE) \
+	_TYPE usf_abs##_TYPE(_TYPE a) { return a < 0 ? -a : a; }
+_USF_ABSFUNC(i32)
+_USF_ABSFUNC(i64)
+#undef _USF_ABSFUNC
+
+#define _USF_MAXFUNC(_TYPE) \
+	_TYPE usf_max##_TYPE(_TYPE a, _TYPE b) { return a > b ? a : b; }
 _USF_MAXFUNC(i32)
 _USF_MAXFUNC(i64)
 _USF_MAXFUNC(u32)
 _USF_MAXFUNC(u64)
 #undef _USF_MAXFUNC
 
-#define _USF_MINFUNC(TYPE) \
-	TYPE usf_min##TYPE(TYPE a, TYPE b) { return a < b ? a : b; }
+#define _USF_MINFUNC(_TYPE) \
+	_TYPE usf_min##_TYPE(_TYPE a, _TYPE b) { return a < b ? a : b; }
 _USF_MINFUNC(i32)
 _USF_MINFUNC(i64)
 _USF_MINFUNC(u32)
 _USF_MINFUNC(u64)
 #undef _USF_MINFUNC
 
-#define _USF_CLAMPFUNC(TYPE) \
-	TYPE usf_clamp##TYPE(TYPE x, TYPE low, TYPE high) { \
+#define _USF_CLAMPFUNC(_TYPE) \
+	_TYPE usf_clamp##_TYPE(_TYPE x, _TYPE low, _TYPE high) { \
 		if (low > high) USF_SWAP(low, high); \
 		return x < low ? low : (x > high ? high : x); \
 	}

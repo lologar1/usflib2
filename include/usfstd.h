@@ -22,10 +22,17 @@ static_assert(sizeof(double) == 8 * sizeof(char), "usflib2: double type is not 8
 typedef float f32;
 typedef double f64;
 
+static_assert(((char) -1) < 0, "usflib2: char type is not signed");
+
 #define usf_malloc malloc
 #define usf_calloc calloc
 #define usf_alloca alloca
 #define usf_realloc realloc
 #define usf_free free
+
+#define strtoi32(_NPTR, _ENDPTR, _BASE) ((i32) strtol(_NPTR, _ENDPTR, _BASE))
+#define strtoi64(_NPTR, _ENDPTR, _BASE) ((i64) strtoll(_NPTR, _ENDPTR, _BASE))
+#define strtou32(_NPTR, _ENDPTR, _BASE) ((u32) strtoul(_NPTR, _ENDPTR, _BASE))
+#define strtou64(_NPTR, _ENDPTR, _BASE) ((u64) strtoull(_NPTR, _ENDPTR, _BASE))
 
 #endif
