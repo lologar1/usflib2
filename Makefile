@@ -29,4 +29,8 @@ clean:
 	rm -rf $(OBJ_DIR)
 	rm -f $(TEST_BINS)
 
-.PHONY: all clean test
+r:
+	make clean
+	make
+
+.PHONY: all clean test r

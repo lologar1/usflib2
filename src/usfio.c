@@ -126,10 +126,16 @@ u64 usf_btof(char *file, void *pointer, u64 size) {
 	return written == size ? written : 0; /* 0 if failed to write */
 }
 
-void usf_printtxt(char **text, u64 len, FILE *stream) {
-	/* Prints an array of strings of length len to stream stream */
+void usf_printtxt(char **text, u64 len) {
+	/* stdout wrapper for usf_fprinttxt */
 
-	for (u64 i = 0; i < len; i++) fprintf(stream, "%s", text[i]);
+	usf_fprinttxt(stdout, text, len);
+}
+
+void usf_fprinttxt(FILE *stream, char **text, u64 len) {
+	/* Prints an array of strings of length len to stream stream, newline-separated */
+
+	for (u64 i = 0; i < len; i++) fprintf(stream, "%s\n", text[i]);
 }
 
 void usf_freetxt(char **text, u64 nlines) {
