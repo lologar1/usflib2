@@ -1,4 +1,9 @@
 First line
+
 Second line
-Third line no newlineAnd followup
+
+Third line no newline
+And followup
+
 We're done !
+

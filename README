@@ -1,6 +1,6 @@
 usflib2 is a C library for useful functionalities developed by lzg (lologar1)
 
-As of the 2026/01/13, every function must include comprehensive documentation
+As of 2026/01/13, every function must include comprehensive documentation
 in the form of a comment following its declaration.
 
 No generative software was used in the conception or implementation of usflib2.

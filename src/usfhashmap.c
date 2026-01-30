@@ -67,7 +67,7 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 		_ACCESS(_HASHMAP, _KEY, _HASHFUNC); \
 	}
 
-usf_hashmap *usf_strhmput(usf_hashmap *hashmap, char *key, usf_data value) {
+usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value) {
 	/* Assigns a 64-bit usf_data value to this char *key.
 	 * The key is hashed using usf_strhash.
 	 * Returns the hashmap, or NULL on error. */
@@ -128,7 +128,7 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 	return hashmap;
 }
 
-usf_data usf_strhmget(usf_hashmap *hashmap, char *key) {
+usf_data usf_strhmget(usf_hashmap *hashmap, const char *key) {
 	/* Returns the 64-bit usf_data value assigned to this char *key,
 	 * or USFNULL (zero) if it is not accessible. */
 
@@ -170,7 +170,7 @@ usf_data usf_inthmget(usf_hashmap *hashmap, u64 key) {
 #undef _ACCESS
 }
 
-usf_data usf_strhmdel(usf_hashmap *hashmap, char *key) {
+usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 	/* Delete the 64-bit usf_data value assigned to this char *key.
 	 * Returns the deleted value, or if it is not accessible */
 

@@ -1,0 +1,7 @@
+TODO
+	Test U64_MAX, U64_MIN, etc.
+	Revise Makefile
+	const sweep-through
+	restrict sweep-through (update cstyle:const&restrict ?)
+	Ensure compliancy with cstyle
+	Hand-made tests (and test specifications) for the entirety of usflib2

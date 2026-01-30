@@ -13,7 +13,10 @@ char *usf_ftos(char *file, u64 *l) {
 	}
 
 	u64 length;
-	length = ftell(f);
+	if ((length = (u64) ftell(f)) == U64_MAX) { /* ftell failed (-1) */
+		fclose(f);
+		return NULL;
+	}
 
 	rewind(f); /* Set file position to start */
 
@@ -50,12 +53,19 @@ char **usf_ftot(char *file, u64 *l) {
 
 	if (l) *l = nlines;
 
-	u64 linelen;
+	u64 linelen, nline;
 	char **text, **textptr, *line, *filestringptr;
 	text = usf_malloc(sizeof(char *) * nlines);
 
-	for (filestringptr = filestring, textptr = text; nlines > 0; nlines--) {
-		linelen = strchr(filestringptr, '\n') - filestringptr + 1; /* Space for all chars plus \0 */
+	for (filestringptr = filestring, textptr = text, nline = 0; nline < nlines; nline++) {
+		char *newline;
+		if ((newline = strchr(filestringptr, '\n')) == NULL) { /* Malformed text file */
+			usf_freetxt(text, nline); /* Free all allocated lines */
+			usf_free(filestring);
+			return NULL;
+		}
+		linelen = (u64) (newline - filestringptr + 1); /* Fit all chars plus \0 */
+
 		line = usf_malloc(linelen);
 		memcpy(line, filestringptr, linelen);
 		line[linelen - 1] = '\0';
@@ -65,7 +75,6 @@ char **usf_ftot(char *file, u64 *l) {
 	}
 
 	usf_free(filestring);
-
 	return text;
 }
 
@@ -95,7 +104,10 @@ void *usf_ftob(char *file, u64 *size) {
 
 	u64 filesize; /* Query file size in bytes */
 	fseek(f, 0, SEEK_END);
-	filesize = ftell(f);
+	if ((filesize = (u64) ftell(f)) == U64_MAX) { /* ftell failed (-1) */
+		fclose(f);
+		return NULL;
+	}
 	fseek(f, 0, SEEK_SET);
 
 	void *array;

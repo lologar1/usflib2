@@ -2,6 +2,7 @@
 #define USFLIB2_H
 
 #include "usfstd.h"
+#include "usfescape.h"
 #include "usfdata.h"
 
 #include "usfstring.h"

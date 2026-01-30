@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <inttypes.h>
 #include "usfio.h"
+#include "usfstring.h"
 
 char *textNoNewline[] =
 	{ 	"First line\n",
@@ -23,7 +24,7 @@ uint64_t lines, i;
 int main() {
 	/* First write a file */
 	FILE *toWrite = fopen("iotest_write.txt", "w");
-	usf_printtxt(textNoNewline, 5, toWrite);
+	usf_fprinttxt(toWrite, textNoNewline, 5);
 	fclose(toWrite);
 
 	readout = usf_ftot("iotest_write.txt", &lines);
@@ -52,4 +53,10 @@ int main() {
 	printf("Gotback %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" bytes %"PRIu64"\n", gotback[0], gotback[1], gotback[2], gotback[3], gotback[4], gotback[5], gotback[6], *b);
 
 	printf("iotest: End of test !\n");
+
+	char high[] = "WOW!ÉÇÄÅ";
+	char low[] = ".thîngçà";
+	usf_slower(high);
+	usf_supper(low);
+	printf("additional test: UPPER then LOWER\n%s\n%s\n", high, low);
 }

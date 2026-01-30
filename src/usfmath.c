@@ -4,7 +4,7 @@ u64 usf_strhash(const char *str) {
 	/* Returns a 64-bit unsigned hash of the given string. */
 
     u64 hash = 5381, c;
-    while ((c = *str++)) {
+    while ((c = (u64) *str++)) {
         hash = ((hash << 5) + hash) + c;
     }
 
@@ -38,8 +38,8 @@ f64 usf_elapsedtimens(struct timespec start, struct timespec end) {
 /* Generic comparison functions */
 #define _USF_INDCMPFUNC(_TYPE) \
 	i32 usf_indcmp##_TYPE(const void *a, const void *b) { \
-		_TYPE x = *((_TYPE *) a); \
-		_TYPE y = *((_TYPE *) b); \
+		_TYPE x = *((const _TYPE *) a); \
+		_TYPE y = *((const _TYPE *) b); \
 		return x > y ? 1 : x < y ? -1 : 0; \
 	}
 _USF_INDCMPFUNC(i32)

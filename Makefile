@@ -4,7 +4,10 @@ OBJ_DIR := obj
 TEST_DIR := tests
 
 CC := gcc
-CFLAGS := -Wall -Wextra -pedantic -O2 -g
+CFLAGS := -Wall -Wextra -Wunused-macros -Wcast-align -Wduplicated-branches -Wduplicated-cond \
+		  -Wformat-signedness -Wjump-misses-init -Wlogical-op -Wsign-conversion -Wcast-qual \
+		  -pedantic -O2 -g
+
 LINKS := -lc -lpthread
 INCLUDES := -I$(INC_DIR)
 
