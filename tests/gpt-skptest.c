@@ -123,7 +123,7 @@ static void test_mixed_types(void) {
 	usf_skset(sk, 2, USFDATAP(&x));
 
 	ASSERT(usf_skget(sk, 0).i == -5, "int data mismatch");
-	ASSERT(usf_skget(sk, 1).d == 3.14, "double data mismatch");
+	ASSERT(usf_skget(sk, 1).f == 3.14, "double data mismatch");
 	ASSERT(usf_skget(sk, 2).p == &x, "pointer data mismatch");
 
 	usf_freesk(sk);

@@ -119,18 +119,19 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
 	return data;
 }
-
 #undef _USF_SKACCESS
 
-void usf_freesk(usf_skiplist *skiplist) {
-	/* Frees a skiplist without calling usf_free on its values.
+void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *)) {
+	/* Frees a skiplist and calls freefunc on its values.
+	 * If freefunc is NULL, nothing is done on the skiplist values.
 	 * If skiplist is NULL, this function has no effect. */
-
+	
 	if (skiplist == NULL) return;
 
 	usf_skipnode *node, *next;
 	for (node = skiplist->base[0]; node; node = next) {
 		next = node->nextnodes[0];
+		if (freefunc) freefunc(node->data.p);
 		usf_free(node);
 	}
 
@@ -145,18 +146,12 @@ void usf_freeskptr(usf_skiplist *skiplist) {
 	/* Frees a skiplist and calls usf_free on its values.
 	 * If skiplist is NULL, this function has no effect. */
 
-	if (skiplist == NULL) return;
+	usf_freeskfunc(skiplist, usf_free);
+}
 
-	usf_skipnode *node, *next;
-	for (node = skiplist->base[0]; node; node = next) {
-		next = node->nextnodes[0];
-		usf_free(node->data.p);
-		usf_free(node);
-	}
+void usf_freesk(usf_skiplist *skiplist) {
+	/* Frees a skiplist without freeing its values.
+	 * If skiplist is NULL, this function has no effect. */
 
-	if (skiplist->lock) {
-		pthread_mutex_destroy(skiplist->lock);
-		usf_free(skiplist->lock);
-	}
-	usf_free(skiplist);
+	usf_freeskfunc(skiplist, NULL);
 }

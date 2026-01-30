@@ -94,7 +94,7 @@ static void test_mixed_data(void) {
 
 	TEST_ASSERT(usf_dequeue(q).i == -7);
 	TEST_ASSERT(usf_dequeue(q).u == 123456);
-	TEST_ASSERT(usf_dequeue(q).d > 3.1415);
+	TEST_ASSERT(usf_dequeue(q).f > 3.1415);
 	TEST_ASSERT(*(int *)usf_dequeue(q).p == 42);
 
 	usf_freequeue(q);

@@ -256,37 +256,20 @@ usf_data *usf_inthmnext(usf_hashmap *hashmap, u64 *iter) {
 	return entry;
 }
 
-void usf_freestrhm(usf_hashmap *hashmap) {
-	/* Frees a string usf_hashmap without calling usf_free on its values. */
+void usf_freestrhmfunc(usf_hashmap *hashmap, void (*freefunc)(void *ptr)) {
+	/* Frees a string usf_hashmap and calls freefunc on its values.
+	 * If freefunc is NULL, nothing is done on the hashmap values.
+	 * If hashmap is NULL, this function has no effect. */
+
+	if (hashmap == NULL) return;
 
 	u64 i;
 	usf_data **array, *entry;
-
-	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
-		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
-		if (entry[0].p) usf_free(entry[0].p); /* Free key */
-		usf_free(entry); /* Free entry */
-	}
-
-	if (hashmap->lock) {
-		pthread_mutex_destroy(hashmap->lock); /* Destroy pthread mutex in thread-safe hashmaps */
-		usf_free(hashmap->lock);
-	}
-	usf_free(array); /* Free underlying array */
-	usf_free(hashmap); /* Free hashmap struct */
-}
-
-void usf_freestrhmptr(usf_hashmap *hashmap) {
-	/* Frees a string usf_hashmap and calls usf_free on its values. */
-
-	u64 i;
-	usf_data **array, *entry;
-
 	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
 		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
 		if (entry[0].p) {
 			usf_free(entry[0].p); /* Free key */
-			usf_free(entry[1].p); /* Free value */
+			if (freefunc) freefunc(entry[1].p); /* Free value */
 		}
 		usf_free(entry); /* Free entry */
 	}
@@ -299,8 +282,23 @@ void usf_freestrhmptr(usf_hashmap *hashmap) {
 	usf_free(hashmap); /* Free hashmap struct */
 }
 
-void usf_freeinthm(usf_hashmap *hashmap) {
-	/* Frees an integer usf_hashmap without calling usf_free on its values.
+void usf_freestrhmptr(usf_hashmap *hashmap) {
+	/* Frees a string usf_hashmap and calls usf_free on its values.
+	 * If hashmap is NULL, this function has no effect. */
+
+	usf_freestrhmfunc(hashmap, usf_free);
+}
+
+void usf_freestrhm(usf_hashmap *hashmap) {
+	/* Frees a string usf_hashmap without freeing its values.
+	 * If hashmap is NULL, this function has no effect. */
+
+	usf_freestrhmfunc(hashmap, NULL);
+}
+
+void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *ptr)) {
+	/* Frees an integer usf_hashmap and calls freefunc on its values.
+	 * If freefunc is NULL, nothing is done on the hashmap values.
 	 * If hashmap is NULL, this function has no effect. */
 
 	if (hashmap == NULL) return;
@@ -310,6 +308,7 @@ void usf_freeinthm(usf_hashmap *hashmap) {
 	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
 		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
 		if ((void *) entry == (void *) hashmap) continue; /* Deleted */
+		if (freefunc) freefunc(entry[1].p); /* Free value */
 		usf_free(entry); /* Free entry */
 	}
 
@@ -325,26 +324,17 @@ void usf_freeinthmptr(usf_hashmap *hashmap) {
 	/* Frees a string usf_hashmap and calls usf_free on its values.
 	 * If hashmap is NULL, this function has no effect. */
 
-	if (hashmap == NULL) return;
-
-	u64 i;
-	usf_data **array, *entry;
-	for (array = hashmap->array, i = 0; i < hashmap->capacity; i++) {
-		if ((entry = array[i]) == NULL) continue; /* Uninitialized */
-		if ((void *) entry == (void *) hashmap) continue; /* Deleted */
-		usf_free(entry[1].p); /* Free value */
-		usf_free(entry); /* Free entry */
-	}
-
-	if (hashmap->lock) {
-		pthread_mutex_destroy(hashmap->lock); /* Destroy pthread mutex in thread-safe hashmaps */
-		usf_free(hashmap->lock);
-	}
-	usf_free(array); /* Free underlying array */
-	usf_free(hashmap); /* Free hashmap struct */
+	usf_freeinthmfunc(hashmap, usf_free);
 }
 
+void usf_freeinthm(usf_hashmap *hashmap) {
+	/* Frees an integer usf_hashmap without freeing its values.
+	 * If hashmap is NULL, this function has no effect. */
 
+	usf_freeinthmfunc(hashmap, NULL);
+}
+
+/* TODO: redo resizehm */
 void usf_resizeinthm(usf_hashmap *hashmap, u64 size) {
 	/* Resizes the underlying array of an integer usf_hashmap to requested size in usf_data (8 bytes).
 	 * If size is smaller or equal than the current size, nothing happens.

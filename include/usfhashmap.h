@@ -29,10 +29,12 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key);
 usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key);
 usf_data *usf_strhmnext(usf_hashmap *hashmap, u64 *iter);
 usf_data *usf_inthmnext(usf_hashmap *hashmap, u64 *iter);
-void usf_freestrhm(usf_hashmap *hashmap);
+void usf_freestrhmfunc(usf_hashmap *hashmap, void (*freefunc)(void *ptr));
 void usf_freestrhmptr(usf_hashmap *hashmap);
-void usf_freeinthm(usf_hashmap *hashmap);
+void usf_freestrhm(usf_hashmap *hashmap);
+void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *ptr));
 void usf_freeinthmptr(usf_hashmap *hashmap);
+void usf_freeinthm(usf_hashmap *hashmap);
 
 /* Internal */
 void usf_resizestrhm(usf_hashmap *hashmap, u64 size);

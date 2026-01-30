@@ -24,7 +24,8 @@ usf_skiplist *usf_newsk_ts(void);
 usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data);
 usf_data usf_skget(usf_skiplist *skiplist, u64 data);
 usf_data usf_skdel(usf_skiplist *skiplist, u64 data);
-void usf_freesk(usf_skiplist *skiplist);
+void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *));
 void usf_freeskptr(usf_skiplist *skiplist);
+void usf_freesk(usf_skiplist *skiplist);
 
 #endif
