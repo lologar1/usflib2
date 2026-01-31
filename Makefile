@@ -6,10 +6,9 @@ TEST_DIR := tests
 CC := gcc
 CFLAGS := -Wall -Wextra -Wunused-macros -Wcast-align -Wduplicated-branches -Wduplicated-cond \
 		  -Wformat-signedness -Wjump-misses-init -Wlogical-op -Wsign-conversion -Wcast-qual \
-		  -pedantic -O2 -g
-
-LINKS := -lc -lpthread
+		  -pedantic -O2
 INCLUDES := -I$(INC_DIR)
+LINKS := -lc -lpthread
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
@@ -26,7 +25,7 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 test: $(TEST_BINS)
 
 $(TEST_DIR)/%: $(TEST_DIR)/%.c
-	$(CC) $(CFLAGS) -O0 $(INCLUDES) $< $(OBJS) -o $@
+	$(CC) $(CFLAGS) -g $(INCLUDES) $< $(OBJS) -o $@
 
 clean:
 	rm -rf $(OBJ_DIR)
