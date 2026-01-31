@@ -1,13 +1,13 @@
 #include "usfio.h"
 
-char *usf_ftos(char *file, u64 *l) {
+char *usf_ftos(const char *file, u64 *l) {
 	/* Reads a file with options "r" and returns the content as a single
 	 * 0-terminated string of length l, or NULL if an error occurred. */
 
 	FILE *f;
 	if ((f = fopen(file, "r")) == NULL) return NULL; /* Failed to open */
 
-	if (fseek(f, 0, SEEK_END) != 0) {
+	if (fseek(f, 0, SEEK_END)) {
 		fclose(f);
 		return NULL; /* Error while seeking end of file */
 	}
@@ -37,11 +37,11 @@ char *usf_ftos(char *file, u64 *l) {
 	return str;
 }
 
-char **usf_ftot(char *file, u64 *l) {
+char **usf_ftot(const char *file, u64 *l) {
 	/* Reads a file with options "r" and returns an array of pointers to its lines, excluding
 	 * the \n character, or NULL if an error occurred. Each line is allocated separately.
 	 * l is the number of lines present in the array.
-	 * The file should contain at least one line (\n character).
+	 * The file should contain at least one line (\n character), otherwise the return value is malloc(0).
 	 * Note: this function should only be called when the underlying memory representation of the
 	 * text array matters. Otherwise, usf_ftost should be called. */
 
@@ -78,7 +78,7 @@ char **usf_ftot(char *file, u64 *l) {
 	return text;
 }
 
-char **usf_ftost(char *file, u64 *l) {
+char **usf_ftost(const char *file, u64 *l) {
 	/* Reads a file with options "r" and returns an array of pointers to its lines, excluding
 	 * the \n character, or NULL if an error ocurred. Each line is not separately allocated.
 	 * l is the number of lines present in the array.
@@ -94,7 +94,7 @@ char **usf_ftost(char *file, u64 *l) {
 	return stringtext;
 }
 
-void *usf_ftob(char *file, u64 *size) {
+void *usf_ftob(const char *file, u64 *size) {
 	/* Reads a binary file with options "rb" and returns a pointer to its
 	 * content or NULL if an error occurred.
 	 * size is set to the size in bytes of the file. */
@@ -124,7 +124,7 @@ void *usf_ftob(char *file, u64 *size) {
 	return array;
 }
 
-u64 usf_btof(char *file, void *pointer, u64 size) {
+u64 usf_btof(const char *file, const void *pointer, u64 size) {
 	/* Writes size bytes from pointer to file with options "wb".
 	 * Returns the number of bytes written, or 0 on error. */
 
@@ -138,16 +138,16 @@ u64 usf_btof(char *file, void *pointer, u64 size) {
 	return written == size ? written : 0; /* 0 if failed to write */
 }
 
-void usf_printtxt(char **text, u64 len) {
+void usf_fprinttxt(FILE *stream, const char **text, u64 len) {
+	/* Prints an array of strings of length len to specified stream, newline-separated */
+
+	for (u64 i = 0; i < len; i++) fprintf(stream, "%s\n", text[i]);
+}
+
+void usf_printtxt(const char **text, u64 len) {
 	/* stdout wrapper for usf_fprinttxt */
 
 	usf_fprinttxt(stdout, text, len);
-}
-
-void usf_fprinttxt(FILE *stream, char **text, u64 len) {
-	/* Prints an array of strings of length len to stream stream, newline-separated */
-
-	for (u64 i = 0; i < len; i++) fprintf(stream, "%s\n", text[i]);
 }
 
 void usf_freetxt(char **text, u64 nlines) {

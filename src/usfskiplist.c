@@ -52,7 +52,9 @@ usf_skiplist *usf_newsk_ts(void) {
 	}
 
 usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
-	/* Sets the given data at virtual index i in the skiplist.
+	/* This function is thread-safe when operating on thread-safe skiplists.
+	 *
+	 * Sets the given data at virtual index i in the skiplist.
 	 * Returns the skiplist, or NULL if an error occurred. */
 
 	if (skiplist == NULL) return NULL;
@@ -80,8 +82,10 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
 	return skiplist;
 }
 
-usf_data usf_skget(usf_skiplist *skiplist, u64 i) {
-	/* Returns the data at virtual index i in the given skiplist,
+usf_data usf_skget(const usf_skiplist *skiplist, u64 i) {
+	/* This function is thread-safe when operating on thread-safe skiplists.
+	 *
+	 * Returns the data at virtual index i in the given skiplist,
 	 * or USFNULL (zero) if it is inaccessible. */
 
 	if (skiplist == NULL) return USFNULL;
@@ -90,7 +94,13 @@ usf_data usf_skget(usf_skiplist *skiplist, u64 i) {
 #define _ACCESS(_SKIPLIST, _INDEX) \
 	if (_SKIPLIST->lock) pthread_mutex_unlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _NODE->data;
+	/* Note: _USF_SKACCESS discards const qualifier as it builds mutable structures for
+	 * use in other functions (i.e. skipnode linking). That warning is disabled here
+	 * since usf_skget only queries these for traversal. */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
 	_USF_SKACCESS(skiplist, i, _ACCESS, (void) 0);
+#pragma GCC diagnostic pop
 #undef _ACCESS
 
 	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
@@ -98,7 +108,9 @@ usf_data usf_skget(usf_skiplist *skiplist, u64 i) {
 }
 
 usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
-	/* Deletes the 64-bit usf_data at virtual index i in the given skiplist.
+	/* This function is thread-safe when operating on thread-safe skiplists.
+	 *
+	 * Deletes the 64-bit usf_data at virtual index i in the given skiplist.
 	 * Returns the deleted value, or USFNULL (zero) if it is not accessible. */
 
 	if (skiplist == NULL) return USFNULL;

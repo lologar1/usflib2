@@ -26,7 +26,7 @@
 	usf_list##_NAME *usf_list##_NAME##set(usf_list##_NAME *list, u64 i, _TYPE data); \
 	usf_list##_NAME *usf_list##_NAME##ins(usf_list##_NAME *list, u64 i, _TYPE data); \
 	usf_list##_NAME *usf_list##_NAME##add(usf_list##_NAME *list, _TYPE data); \
-	_TYPE usf_list##_NAME##get(usf_list##_NAME *list, u64 i); \
+	_TYPE usf_list##_NAME##get(const usf_list##_NAME *list, u64 i); \
 	_TYPE usf_list##_NAME##del(usf_list##_NAME *list, u64 i); \
 	void usf_freelist##_NAME(usf_list##_NAME *list);
 _USF_LISTDECL(i8, i8)

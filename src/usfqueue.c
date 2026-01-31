@@ -27,7 +27,9 @@ usf_queue *usf_newqueue_ts(void) {
 }
 
 usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
-	/* Enqueues the given data to this FIFO queue.
+	/* This function is thread-safe when operating on thread-safe queues.
+	 *
+	 * Enqueues the given data to this FIFO queue.
 	 * Returns the queue, or NULL on error. */
 
 	if (queue == NULL) return NULL;
@@ -50,7 +52,9 @@ usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
 }
 
 usf_data usf_dequeue(usf_queue *queue) {
-	/* Returns dequeued data from this FIFO queue,
+	/* This function is thread-safe when operating on thread-safe queues.
+	 *
+	 * Returns dequeued data from this FIFO queue,
 	 * or USFNULL (zero) if it is inaccessible. */
 
 	if (queue == NULL) return USFNULL;
@@ -73,8 +77,9 @@ usf_data usf_dequeue(usf_queue *queue) {
 	return data;
 }
 
-void usf_freequeue(usf_queue *queue) {
-	/* Frees a usf_queue without calling usf_free on its values.
+void usf_freequeuefunc(usf_queue *queue, void (*freefunc)(void *)) {
+	/* Frees a usf_queue and calls freefunc on its values.
+	 * If freefunc is NULL, nothing is done on the queue values.
 	 * If queue is NULL, this function has no effect. */
 
 	if (queue == NULL) return;
@@ -82,6 +87,7 @@ void usf_freequeue(usf_queue *queue) {
 	usf_queuenode *node, *next;
 	for (node = queue->first; node; node = next) {
 		next = node->next;
+		freefunc(node->data.p);
 		usf_free(node);
 	}
 
@@ -96,18 +102,12 @@ void usf_freequeueptr(usf_queue *queue) {
 	/* Frees a usf_queue and calls usf_free on its values.
 	 * If queue is NULL, this function has no effect. */
 
-	if (queue == NULL) return;
+	usf_freequeuefunc(queue, usf_free);
+}
 
-	usf_queuenode *node, *next;
-	for (node = queue->first; node; node = next) {
-		next = node->next;
-		usf_free(node->data.p);
-		usf_free(node);
-	}
+void usf_freequeue(usf_queue *queue) {
+	/* Frees a usf_queue without calling usf_free on its values.
+	 * If queue is NULL, this function has no effect. */
 
-	if (queue->lock) {
-		pthread_mutex_destroy(queue->lock);
-		usf_free(queue->lock);
-	}
-	usf_free(queue);
+	usf_freequeuefunc(queue, NULL);
 }

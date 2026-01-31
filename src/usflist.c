@@ -118,7 +118,7 @@
 		return list; \
 	} \
 	\
-	_TYPE usf_list##_NAME##get(usf_list##_NAME *list, u64 i) { \
+	_TYPE usf_list##_NAME##get(const usf_list##_NAME *list, u64 i) { \
 		/* Returns the data at index i in the given list, or zero if it is inaccessible. */ \
 		\
 		if (list == NULL) return (_TYPE) {0}; \
