@@ -138,13 +138,13 @@ u64 usf_btof(const char *file, const void *pointer, u64 size) {
 	return written == size ? written : 0; /* 0 if failed to write */
 }
 
-void usf_fprinttxt(FILE *stream, const char **text, u64 len) {
+void usf_fprinttxt(FILE *stream, char *const *text, u64 len) { /* __REVISE__ cstyle@1.8.1 */
 	/* Prints an array of strings of length len to specified stream, newline-separated */
 
 	for (u64 i = 0; i < len; i++) fprintf(stream, "%s\n", text[i]);
 }
 
-void usf_printtxt(const char **text, u64 len) {
+void usf_printtxt(char *const *text, u64 len) { /* __REVISE__ cstyle@1.8.1 */
 	/* stdout wrapper for usf_fprinttxt */
 
 	usf_fprinttxt(stdout, text, len);

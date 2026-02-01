@@ -3,27 +3,32 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
-#include <assert.h>
+#if (__STDC_VERSION__ < 202311L) /* C23 adds native keyword support */
+	#include <assert.h>
+#endif
+
+#if (__STDC_VERSION__ <= 202311L) /* Standards newer than C23 implement countof */
+	#define countof(_ARRAY) (sizeof(_ARRAY)/sizeof(*_ARRAY))
+#endif
 
 #define USF_EMPTY
 
-/* Limit macros */
-#define I8_MAX ((i8) 127LL)
-#define I8_MIN ((i8) -128LL)
-#define I16_MAX ((i16) 32767LL)
-#define I16_MIN ((i16) -32768LL)
-#define I32_MAX ((i32) 2147483647LL)
-#define I32_MIN ((i32) -2147483648LL)
-#define I64_MAX ((i64) 9223372036854775807LL)
-#define I64_MIN ((i64) -9223372036854775808LL)
-#define U8_MAX ((u8) 255ULL)
-#define U8_MIN (0)
-#define U16_MAX ((u16) 65535ULL)
-#define U16_MIN (0)
-#define U32_MAX ((u32) 4294967295ULL)
-#define U32_MIN (0)
-#define U64_MAX ((u64) 18446744073709551615ULL)
-#define U64_MIN (0)
+#define I8_MAX INT8_MAX
+#define I8_MIN INT8_MIN
+#define I16_MAX INT16_MAX
+#define I16_MIN INT16_MIN
+#define I32_MAX INT32_MAX
+#define I32_MIN INT32_MIN
+#define I64_MAX INT64_MAX
+#define I64_MIN INT64_MIN
+#define U8_MAX UINT8_MAX
+#define U8_MIN 0
+#define U16_MAX UINT16_MAX
+#define U16_MIN 0
+#define U32_MAX UINT32_MAX
+#define U32_MIN 0
+#define U64_MAX UINT64_MAX
+#define U64_MIN 0
 
 typedef int8_t i8;
 typedef int16_t i16;
@@ -55,6 +60,5 @@ static_assert(((u8) -1) == 255, "usflib2: negative representation is not two's c
 #define usf_alloca alloca
 #define usf_realloc realloc
 #define usf_free free
-
 
 #endif

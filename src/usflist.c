@@ -152,19 +152,30 @@
 		return data; \
 	} \
 	\
-	void usf_freelist##_NAME(usf_list##_NAME *list) { \
-		/* Frees a list without calling usf_free on its values.
+	void usf_freelist##_NAME##func(usf_list##_NAME *list, void (*freefunc)(_TYPE)) { \
+		/* Frees a list and calls freefunc on its values.
+		 * If freefunc is NULL, nothing is done to the values.
 		 * If list is NULL, this function has no effect. */ \
 		\
 		if (list == NULL) return; \
 		\
-		usf_free(list->array); \
+		u64 i; \
+		if (freefunc) for (i = 0; i < list->size; i++) \
+			freefunc(list->array[i]); /* Free value */ \
 		\
+		usf_free(list->array); \
 		if (list->lock) { \
 			pthread_mutex_destroy(list->lock); \
 			usf_free(list->lock); \
 		} \
 		usf_free(list); \
+	} \
+	\
+	void usf_freelist##_NAME(usf_list##_NAME *list) { \
+		/* Frees a list without freeing its values.
+		 * If list is NULL, this function has no effect. */ \
+		\
+		usf_freelist##_NAME##func(list, NULL); \
 	}
 _USF_LISTIMPL(i8, i8)
 _USF_LISTIMPL(i16, i16)

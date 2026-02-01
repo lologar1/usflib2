@@ -53,7 +53,7 @@ u64 usf_hash(u64 val);
 f64 usf_elapsedtimes(struct timespec start, struct timespec end);
 f64 usf_elapsedtimens(struct timespec start, struct timespec end);
 
-/* Generic comparison functions */
+/* Generic math functions */
 i32 usf_indcmpi32(const void *a, const void *b);
 i32 usf_indcmpi64(const void *a, const void *b);
 i32 usf_indcmpu32(const void *a, const void *b);

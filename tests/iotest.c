@@ -1,62 +1,78 @@
-#include <stdio.h>
-#include <inttypes.h>
 #include "usfio.h"
-#include "usfstring.h"
 
-char *textNoNewline[] =
-	{ 	"First line\n",
-		"Second line\n",
-		"Third line no newline",
-		"And followup\n",
-		"We're done !\n", /* MANDATORY newline termination */
+i32 main(void) {
+	/* usfio.c test */
+
+	u64 i;
+	printf("iotest: Starting test!\n");
+
+	const char *filecontents[] = {
+		"firstline(newline)",
+		"secondline(newline)",
+		"thirdline(eof)"
 	};
 
-char *textWellFormatted[] =
-	{ 	"First line\n",
-		"Second line\n",
-		"Third line no newlineAnd followup\n",
-		"We're done !\n",
-	};
+	/* usf_ftos, usf_ftost, usf_fprinttxt, usf_printtxt and usf_freetxt */
+	u64 ftoslen;
+	char **ftosfile;
+	ftosfile = usf_ftost("iotest-file-read.txt", &ftoslen);
 
-char **readout, *str;
-uint64_t lines, i;
+	if (ftosfile == NULL) {
+		printf("iotest: Couldn't open (ftost/ftos) file \"iotest-file-read.txt\", aborting.\n");
+		exit(1);
+	} else printf("iotest: ftos OK\niotest: ftost OK\n");
 
-int main() {
-	/* First write a file */
-	FILE *toWrite = fopen("iotest_write.txt", "w");
-	usf_fprinttxt(toWrite, textNoNewline, 5);
-	fclose(toWrite);
-
-	readout = usf_ftot("iotest_write.txt", &lines);
-	for (i = 0; i < lines; i++) {
-		if (strcmp(readout[i], textWellFormatted[i]) == 0)
-			printf("iotest: Success comparison for line %"PRIu64": %s\n", i, readout[i]);
-		else {
-			printf("%s", readout[i]);
-			printf("SEP\n");
-			printf("%s", textWellFormatted[i]);
-			printf("SEP\n");
-		}
+	for (i = 0; i < ftoslen; i++) if (strcmp(ftosfile[i], filecontents[i])) {
+		printf("iotest: File contents mismatch (ftost/ftos), got \"%s\" while expecting \"%s\", aborting.\n",
+				ftosfile[i], filecontents[i]);
+		exit(2);
 	}
 
-	if ((str = usf_ftos("iotest_write.txt", &lines)) == NULL)
-		printf("iotest: Error in usf_ftos while reading file\n");
-	else
-		printf("iotest: printing file in single string:\n%s", str);
+	FILE *writefile;
+	writefile = fopen("iotest-file-write.txt", "w");
+	usf_fprinttxt(writefile, ftosfile, ftoslen);
+	fclose(writefile);
 
-	printf("iotest: binary file tests\n");
-	char btest[] = {1, 2, 3, 4, 0, 5, 6};
-	printf("Writing 1, 2, 3, 4, 0, 5, 6\n");
-	usf_btof("binary.bin", btest, sizeof(btest));
-	size_t b[1];
-	char *gotback = usf_ftob("binary.bin", b);
-	printf("Gotback %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" %"PRId16" bytes %"PRIu64"\n", gotback[0], gotback[1], gotback[2], gotback[3], gotback[4], gotback[5], gotback[6], *b);
+	usf_freetxt(ftosfile, 1);
 
-	printf("iotest: End of test !\n");
+	/* usf_ftot */
+	u64 ftotlen;
+	char **ftotfile;
+	ftotfile = usf_ftot("iotest-file-write.txt", &ftotlen);
 
-	char high[] = "WOW!ÉÇÄÅ";
-	char low[] = ".thîngçà";
-	usf_slower(high);
-	usf_supper(low);
-	printf("additional test: UPPER then LOWER\n%s\n%s\n", high, low);
+	if (ftotfile == NULL) {
+		printf("iotest: Couldn't open (ftot) file \"iotest-file.txt\", aborting.\n");
+		exit(3);
+	} else printf("iotest: ftot OK\n");
+
+	for (i = 0; i < ftotlen; i++) if (strcmp(ftotfile[i], filecontents[i])) {
+		printf("iotest: File contents mismatch (ftot/fprinttxt), got \"%s\" while expecting \"%s\", aborting.\n",
+				ftotfile[i], filecontents[i]);
+		exit(4);
+	}
+	printf("iotest: fprinttxt/printtxt OK\n"); /* Written by */
+
+	usf_freetxt(ftotfile, ftotlen);
+
+	/* usf_ftob and usf_btof */
+	u64 buffercontents[10] = { 0, 1, 1, 2, 3, 5, 8, 13, 21, 34 };
+	if (usf_btof("iotest-buffer.txt", buffercontents, sizeof(buffercontents)) != sizeof(buffercontents)) {
+		printf("iotest: Buffer write failure, aborting.\n");
+		exit(5);
+	}
+
+	u64 *ftobbuffer;
+	ftobbuffer = usf_ftob("iotest-buffer.txt", NULL);
+
+	for (i = 0; i < countof(buffercontents); i++) if (ftobbuffer[i] != buffercontents[i]) {
+		printf("iotest: Buffer contents mismatch, got %"PRIu64" while expecting %"PRIu64", aborting.\n",
+				ftobbuffer[i], buffercontents[i]);
+		exit(6);
+	}
+	printf("iotest: btof OK\niotest: ftob OK\n");
+
+	usf_free(ftobbuffer);
+
+	printf("iotest: usfio OK (ALL TESTS PASSED)\n");
+	return 0;
 }

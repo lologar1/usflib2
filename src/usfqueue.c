@@ -87,7 +87,7 @@ void usf_freequeuefunc(usf_queue *queue, void (*freefunc)(void *)) {
 	usf_queuenode *node, *next;
 	for (node = queue->first; node; node = next) {
 		next = node->next;
-		freefunc(node->data.p);
+		if (freefunc) freefunc(node->data.p);
 		usf_free(node);
 	}
 

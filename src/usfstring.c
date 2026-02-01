@@ -66,13 +66,13 @@ u64 usf_scount(const char *str, char c) {
 	return count;
 }
 
-u64 usf_sreplace(char *str, char template, char replacement) {
-	/* Replaces all occurrences of char template with char replacement in string str
+u64 usf_sreplace(char *str, char from, char to) {
+	/* Replaces all occurrences of char from with char to in string str
 	 * and return the number of successful substitutions */
 
     u64 substitutions;
-	for (substitutions = 0; (str = strchr(str, template)) != NULL; substitutions++)
-        *str++ = replacement;
+	for (substitutions = 0; (str = strchr(str, from)) != NULL; substitutions++)
+        *str++ = to;
 
     return substitutions;
 }
@@ -132,7 +132,7 @@ void usf_slower(char *str) {
 	}
 }
 
-i32 usf_txtcontainsline(const char **array, u64 len, const char *string) {
+i32 usf_txtcontainsline(char *const *array, u64 len, const char *string) { /* __REVISE__ cstyle@1.8.1 */
 	/* Returns 1 if the string array of length len contains string string, otherwise 0 */
 
 	if (string == NULL) return 0;

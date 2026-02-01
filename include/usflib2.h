@@ -8,7 +8,7 @@
 #include "usfstring.h"
 #include "usfhashmap.h"
 #include "usfdynarr.h" /* DEPRECATED */
-#include "skiplist.h"
+#include "usfskiplist.h"
 #include "usfqueue.h"
 #include "usfio.h"
 #include "usfmath.h"
