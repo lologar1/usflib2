@@ -1,6 +1,16 @@
 usflib2 is a C library for useful functionalities developed by lzg (lologar1)
 
-As of 2026/01/13, every function must include comprehensive documentation
-in the form of a comment following its declaration.
+BUILDING USFLIB2
+	Currently, usflib2 depends on the following libraries, which must be installed on your system:
+		libc & libm
+		pthread
+
+	usflib2 uses C23, although it is compatible with C11
+
+	Run `make` to compile usflib2.
+	To test the library, run `make test && cd tests/ && valgrind ./usftest.usftest`.
+
+As of 2026/01/13, comprehensive documentation must follow a function declaration.
+As of 2026/02/01, we have reached lzg cstyle compliance!
 
 No generative software was used in the conception or implementation of usflib2.
