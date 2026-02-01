@@ -4,6 +4,7 @@
 #include <string.h>
 #include "usfstd.h"
 #include "usfaesc.h"
+#include "usfmath.h"
 
 i32 main(i32 nargs, char *argv[]) {
 	/* Test the usflib2 library */
@@ -17,13 +18,16 @@ i32 main(i32 nargs, char *argv[]) {
 
 	printf("usftest: File extension "AESC_COLOR_SET_BOLD".usftest"AESC_RESET_ALL
 			" is used for labeling usflib2 test files.\n");
-	printf("usftest: "AESC_COLOR_FG_YELLOW"Starting all tests!"AESC_RESET_ALL"\n");
+	printf("usftest: Starting all tests!\n");
 
 	DIR *directory;
 	if ((directory = opendir(".")) == NULL) {
 		printf("usftest: Couldn't open current directory, aborting!\n");
 		exit(2);
 	}
+
+	struct timespec start, end;
+	clock_gettime(CLOCK_MONOTONIC, &start);
 
 	struct dirent *entry;
 	while ((entry = readdir(directory))) {
@@ -49,7 +53,9 @@ i32 main(i32 nargs, char *argv[]) {
 	}
 	closedir(directory);
 
-	printf("usftest: "AESC_COLOR_FG_BRIGHT_GREEN"usftest OK (ALL TESTS PASSED)"AESC_RESET_ALL"\n");
+	clock_gettime(CLOCK_MONOTONIC, &end);
+	printf("usftest: "AESC_COLOR_FG_BRIGHT_GREEN"usftest OK (ALL TESTS PASSED) after %f seconds"
+			AESC_RESET_ALL"\n", usf_elapsedtimes(start, end));
 
 	return 0;
 }

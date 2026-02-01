@@ -28,7 +28,7 @@ i32 usf_indstrlen(const void *a, const void *b) {
 		else return -1;
 	} else if (*y == NULL) return 1;
 
-	return strlen(*x) - strlen(*y);
+	return (i32) (strlen(*x) - strlen(*y));
 }
 
 const char *usf_sstartswith(const char *base, const char *prefix) {

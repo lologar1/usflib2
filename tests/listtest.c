@@ -2,7 +2,7 @@
 #include "usflist.h"
 
 #define TESTSZ 100000
-#define PERFSZ 200000
+#define PERFSZ 100000
 
 u64 freeindex_;
 u64 freedvalues_[TESTSZ];
