@@ -1,3 +1,0 @@
-firstline(newline)
-secondline(newline)
-thirdline(eof)

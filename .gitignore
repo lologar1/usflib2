@@ -2,3 +2,4 @@ obj/
 sync.sh
 *.swp
 *~
+*.usftest
