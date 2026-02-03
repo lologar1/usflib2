@@ -2,15 +2,15 @@
 #define USFHASHMAP_H
 
 #include <string.h>
-#include <pthread.h>
 #include "usfdata.h"
 #include "usfmath.h"
+#include "usfthread.h"
 
 #define USF_HASHMAP_DEFAULTSIZE 16
 #define USF_HASHMAP_RESIZE_MULTIPLIER 2
 
 typedef struct usf_hashmap {
-	pthread_mutex_t *lock;
+	usf_mutex *lock;
 	usf_data **array; /* Hash : Value */
 	u64 size;
 	u64 capacity;
@@ -37,7 +37,7 @@ void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *));
 void usf_freeinthmptr(usf_hashmap *hashmap);
 void usf_freeinthm(usf_hashmap *hashmap);
 
-void usf_resizestrhm(usf_hashmap *hashmap, u64 size);
-void usf_resizeinthm(usf_hashmap *hashmap, u64 size);
+void usf_resizestrhm(usf_hashmap *hashmap, u64 size);								/* Thread-safe */
+void usf_resizeinthm(usf_hashmap *hashmap, u64 size);								/* Thread-safe */
 
 #endif

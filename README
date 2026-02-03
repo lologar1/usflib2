@@ -5,7 +5,7 @@ BUILDING USFLIB2
 		libc & libm
 		pthread
 
-	usflib2 uses C23, although it is compatible with C11
+	usflib2 uses C23, although it is compatible with C11.
 
 	Run `make` to compile usflib2.
 	To test the library, run `make test && cd tests/ && valgrind ./usftest.usftest`.

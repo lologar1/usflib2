@@ -12,7 +12,6 @@ i32 main(void) {
 	usf_queue *queue;
 
 	/* NORMAL TESTS */
-
 	printf("queuetest: Starting test!\n");
 	queue = usf_newqueue();
 
@@ -24,7 +23,9 @@ i32 main(void) {
 	}
 	printf("queuetest: enqueue OK\n");
 	printf("queuetest: dequeue OK\n");
+	usf_freequeue(queue);
 
+	queue = usf_newqueue_ts();
 #ifndef USFTEST_NO_PARALLEL
 #pragma omp parallel for /* For ASan */
 #endif

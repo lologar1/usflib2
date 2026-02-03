@@ -1,9 +1,9 @@
 #ifndef USFQUEUE_H
 #define USFQUEUE_H
 
-#include <pthread.h>
 #include "usfstd.h"
 #include "usfdata.h"
+#include "usfthread.h"
 
 typedef struct usf_queuenode {
 	usf_data data;
@@ -11,7 +11,7 @@ typedef struct usf_queuenode {
 } usf_queuenode;
 
 typedef struct usf_queue {
-	pthread_mutex_t *lock;
+	usf_mutex *lock;
 	usf_queuenode *first;
 	usf_queuenode *last;
 } usf_queue;

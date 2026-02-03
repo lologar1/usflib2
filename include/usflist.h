@@ -2,10 +2,10 @@
 #define USFLIST_H
 
 #include <string.h>
-#include <pthread.h>
 #include "usfstd.h"
 #include "usfdata.h"
 #include "usfmath.h"
+#include "usfthread.h"
 
 #define USF_LIST_DEFAULTSIZE 16
 #define USF_LIST_RESIZE_MULTIPLIER 2
@@ -13,7 +13,7 @@
 /* Generic list declaration for multiple possible underlying types */
 #define _USF_LISTDECL(_TYPE, _NAME) \
 	typedef struct usf_list##_NAME { \
-		pthread_mutex_t *lock; \
+		usf_mutex *lock; \
 		_TYPE *array; \
 		u64 size; \
 		u64 capacity; \

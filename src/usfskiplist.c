@@ -16,8 +16,8 @@ usf_skiplist *usf_newsk_ts(void) {
 
 	usf_skiplist *skiplist;
 	skiplist = usf_calloc(1, sizeof(usf_skiplist));
-	skiplist->lock = usf_malloc(sizeof(pthread_mutex_t));
-	if (pthread_mutex_init(skiplist->lock, NULL)) { /* Default attributes */
+	skiplist->lock = usf_malloc(sizeof(usf_mutex));
+	if (usf_mtxinit(skiplist->lock, MTXINIT_PLAIN)) {
 		usf_free(skiplist->lock);
 		usf_free(skiplist);
 		return NULL; /* mutex init failed */
@@ -58,12 +58,12 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
 	 * Returns the skiplist, or NULL if an error occurred. */
 
 	if (skiplist == NULL) return NULL;
-	if (skiplist->lock) pthread_mutex_lock(skiplist->lock); /* Thread-safe lock */
+	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
 	usf_skipnode **skiplinks[USF_SKIPLIST_FRAMESIZE];
 #define _ACCESS(_SKIPLIST, _INDEX) \
 	_NODE->data = data; \
-	if (_SKIPLIST->lock) pthread_mutex_unlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
+	if (_SKIPLIST->lock) usf_mtxunlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _SKIPLIST;
 	_USF_SKACCESS(skiplist, i, _ACCESS, skiplinks[_LEVEL] = &_SKIPFRAME[_LEVEL]);
 #undef _ACCESS
@@ -78,7 +78,7 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
 	}
 	skiplist->size++;
 
-	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
+	if (skiplist->lock) usf_mtxunlock(skiplist->lock); /* Thread-safe unlock */
 	return skiplist;
 }
 
@@ -89,10 +89,10 @@ usf_data usf_skget(const usf_skiplist *skiplist, u64 i) {
 	 * or USFNULL (zero) if it is inaccessible. */
 
 	if (skiplist == NULL) return USFNULL;
-	if (skiplist->lock) pthread_mutex_lock(skiplist->lock); /* Thread-safe lock */
+	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
 #define _ACCESS(_SKIPLIST, _INDEX) \
-	if (_SKIPLIST->lock) pthread_mutex_unlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
+	if (_SKIPLIST->lock) usf_mtxunlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _NODE->data;
 	/* Note: _USF_SKACCESS discards const qualifier as it builds mutable structures for
 	 * use in other functions (i.e. skipnode linking). That warning is disabled here
@@ -103,7 +103,7 @@ usf_data usf_skget(const usf_skiplist *skiplist, u64 i) {
 #pragma GCC diagnostic pop
 #undef _ACCESS
 
-	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
+	if (skiplist->lock) usf_mtxunlock(skiplist->lock); /* Thread-safe unlock */
 	return USFNULL;
 }
 
@@ -114,7 +114,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 	 * Returns the deleted value, or USFNULL (zero) if it is not accessible. */
 
 	if (skiplist == NULL) return USFNULL;
-	if (skiplist->lock) pthread_mutex_lock(skiplist->lock); /* Thread-safe lock */
+	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
 #define _ACCESS(_SKIPLIST, _INDEX) \
 	_SKIPFRAME[_LEVEL] = _NODE->nextnodes[_LEVEL]; /* Unlink */ \
@@ -128,7 +128,7 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 		usf_free(_NODE);
 	} else data = USFNULL;
 
-	if (skiplist->lock) pthread_mutex_unlock(skiplist->lock); /* Thread-safe unlock */
+	if (skiplist->lock) usf_mtxunlock(skiplist->lock); /* Thread-safe unlock */
 	return data;
 }
 #undef _USF_SKACCESS
@@ -148,7 +148,7 @@ void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *)) {
 	}
 
 	if (skiplist->lock) {
-		pthread_mutex_destroy(skiplist->lock);
+		usf_mtxdestroy(skiplist->lock);
 		usf_free(skiplist->lock);
 	}
 	usf_free(skiplist);

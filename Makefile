@@ -8,7 +8,7 @@ CFLAGS := -Wall -Wextra -Wunused-macros -Wcast-align -Wduplicated-branches -Wdup
 		  -Wformat-signedness -Wjump-misses-init -Wlogical-op -Wsign-conversion -Wcast-qual \
 		  -std=c2x -pedantic -O2
 INCLUDES := -I$(INC_DIR)
-LINKS := -lc -lm -lpthread
+LINKS := -lc -lm
 
 SRCS := $(wildcard $(SRC_DIR)/*.c)
 OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))

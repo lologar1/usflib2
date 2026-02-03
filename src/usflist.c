@@ -58,8 +58,8 @@
 		\
 		usf_list##_NAME *list; \
 		list = usf_malloc(sizeof(usf_list##_NAME)); \
-		list->lock = usf_malloc(sizeof(pthread_mutex_t)); \
-		if (pthread_mutex_init(list->lock, NULL)) { /* Default attributes */ \
+		list->lock = usf_malloc(sizeof(usf_mutex)); \
+		if (usf_mtxinit(list->lock, MTXINIT_PLAIN)) { \
 			usf_free(list->lock); \
 			usf_free(list); \
 			return NULL; /* mutex init failed */ \
@@ -76,12 +76,12 @@
 		 * Returns the list, or NULL if an error occurred. */ \
 		\
 		if (list == NULL) return NULL; \
-		if (list->lock) pthread_mutex_lock(list->lock); /* Thread-safe lock */ \
+		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		_USF_LISTRESIZE(list, i, data); \
 		list->array[i] = data; \
 		\
-		if (list->lock) pthread_mutex_unlock(list->lock); /* Thread-safe unlock */ \
+		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return list; \
 	} \
 	\
@@ -91,14 +91,14 @@
 		 * Returns the list, or NULL if an error occurred. */ \
 		\
 		if (list == NULL) return NULL; \
-		if (list->lock) pthread_mutex_lock(list->lock); /* Thread-safe lock */ \
+		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		_USF_LISTRESIZE(list, USF_MAX(list->size, i), data); \
 		if (i < list->size) \
 			memmove(&list->array[i + 1], &list->array[i], (list->size - (i + 1)) * sizeof(_TYPE)); \
 		list->array[i] = data; \
 		\
-		if (list->lock) pthread_mutex_unlock(list->lock); /* Thread-safe unlock */ \
+		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return list; \
 	} \
 	\
@@ -108,13 +108,13 @@
 		 * Returns the list, or NULL if an error occurred. */ \
 		\
 		if (list == NULL) return NULL; \
-		if (list->lock) pthread_mutex_lock(list->lock); /* Thread-safe lock */ \
+		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		u64 i; \
 		_USF_LISTRESIZE(list, (i = list->size), data); \
 		list->array[i] = data; \
 		\
-		if (list->lock) pthread_mutex_unlock(list->lock); /* Thread-safe unlock */ \
+		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return list; \
 	} \
 	\
@@ -122,13 +122,13 @@
 		/* Returns the data at index i in the given list, or zero if it is inaccessible. */ \
 		\
 		if (list == NULL) return (_TYPE) {0}; \
-		if (list->lock) pthread_mutex_lock(list->lock); /* Thread-safe lock */ \
+		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		_TYPE data; \
 		if (i >= list->size) data = (_TYPE) {0}; \
 		else data = list->array[i]; \
 		\
-		if (list->lock) pthread_mutex_unlock(list->lock); /* Thread-safe unlock */ \
+		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return data; \
 	} \
 	\
@@ -138,7 +138,7 @@
 		 * Returns the deleted value, or zero if it is inaccessible. */ \
 		\
 		if (list == NULL) return (_TYPE) {0}; \
-		if (list->lock) pthread_mutex_lock(list->lock); /* Thread-safe lock */ \
+		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		_TYPE data; \
 		if (i >= list->size) data = (_TYPE) {0}; \
@@ -148,7 +148,7 @@
 			list->size--; \
 		} \
 		\
-		if (list->lock) pthread_mutex_unlock(list->lock); /* Thread-safe unlock */ \
+		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return data; \
 	} \
 	\
@@ -165,7 +165,7 @@
 		\
 		usf_free(list->array); \
 		if (list->lock) { \
-			pthread_mutex_destroy(list->lock); \
+			usf_mtxdestroy(list->lock); \
 			usf_free(list->lock); \
 		} \
 		usf_free(list); \

@@ -16,8 +16,8 @@ usf_queue *usf_newqueue_ts(void) {
 
 	usf_queue *queue;
 	queue = usf_malloc(sizeof(usf_queue));
-	queue->lock = usf_malloc(sizeof(pthread_mutex_t));
-	if (pthread_mutex_init(queue->lock, NULL)) { /* Default attributes */
+	queue->lock = usf_malloc(sizeof(usf_mutex));
+	if (usf_mtxinit(queue->lock, MTXINIT_PLAIN)) {
 		usf_free(queue);
 		return NULL; /* mutex init failed */
 	}
@@ -33,7 +33,7 @@ usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
 	 * Returns the queue, or NULL on error. */
 
 	if (queue == NULL) return NULL;
-	if (queue->lock) pthread_mutex_lock(queue->lock); /* Thread-safe lock */
+	if (queue->lock) usf_mtxlock(queue->lock); /* Thread-safe lock */
 
 	usf_queuenode *enqueue;
 	enqueue = usf_malloc(sizeof(usf_queuenode));
@@ -47,7 +47,7 @@ usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
 		queue->last = enqueue;
 	}
 
-	if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
+	if (queue->lock) usf_mtxunlock(queue->lock); /* Thread-safe unlock */
 	return queue;
 }
 
@@ -58,11 +58,11 @@ usf_data usf_dequeue(usf_queue *queue) {
 	 * or USFNULL (zero) if it is inaccessible. */
 
 	if (queue == NULL) return USFNULL;
-	if (queue->lock) pthread_mutex_lock(queue->lock); /* Thread-safe lock */
+	if (queue->lock) usf_mtxlock(queue->lock); /* Thread-safe lock */
 
 	usf_queuenode *dequeue;
 	if ((dequeue = queue->first) == NULL) {
-		if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
+		if (queue->lock) usf_mtxunlock(queue->lock); /* Thread-safe unlock */
 		return USFNULL; /* Empty queue */
 	}
 
@@ -73,7 +73,7 @@ usf_data usf_dequeue(usf_queue *queue) {
 		queue->last = NULL; /* Dequeue was last member */
 	usf_free(dequeue);
 
-	if (queue->lock) pthread_mutex_unlock(queue->lock); /* Thread-safe unlock */
+	if (queue->lock) usf_mtxunlock(queue->lock); /* Thread-safe unlock */
 	return data;
 }
 
@@ -92,7 +92,7 @@ void usf_freequeuefunc(usf_queue *queue, void (*freefunc)(void *)) {
 	}
 
 	if (queue->lock) {
-		pthread_mutex_destroy(queue->lock);
+		usf_mtxdestroy(queue->lock);
 		usf_free(queue->lock);
 	}
 	usf_free(queue);

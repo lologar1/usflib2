@@ -30,8 +30,8 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 	 * Returns the created hashmap, or NULL if a mutex cannot be created. */
 
 	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
-	hashmap->lock = usf_malloc(sizeof(pthread_mutex_t));
-	if (pthread_mutex_init(hashmap->lock, NULL)) { /* Default attributes */
+	hashmap->lock = usf_malloc(sizeof(usf_mutex));
+	if (usf_mtxinit(hashmap->lock, MTXINIT_RECURSIVE) == THRD_ERROR) { /* Recursive in resizing */
 		usf_free(hashmap->lock);
 		usf_free(hashmap);
 		return NULL; /* mutex init failed */
@@ -74,7 +74,7 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value)
 	 * Returns the hashmap, or NULL on error. */
 
 	if (hashmap == NULL || key == NULL) return NULL; /* Bad arguments */
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_resizestrhm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
@@ -96,7 +96,7 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value)
 	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
 
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
 	return hashmap;
 }
 
@@ -107,17 +107,17 @@ usf_data usf_strhmget(const usf_hashmap *hashmap, const char *key) {
 	 * or USFNULL (zero) if it is not accessible. */
 
 	if (hashmap == NULL) return USFNULL;
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 #define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
 	if (_ENTRY == NULL) { \
-		if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
 	if (_ENTRY[0].p == NULL || strcmp((char *) _ENTRY[0].p, _KEY)) continue; /* Collision */ \
 	\
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return _ENTRY[1]; /* Found */
 	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
@@ -130,12 +130,12 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 	 * Returns the deleted value, or if it is not accessible */
 
 	if (hashmap == NULL) return USFNULL;
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	usf_data value;
 #define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
 	if (_ENTRY == NULL) { \
-		if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
@@ -145,7 +145,7 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 	value = _ENTRY[1]; \
 	usf_free(_ENTRY[0].p); /* Free key */ \
 	_ENTRY[0] = USFNULL; /* Delete entry */ \
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
 	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
 #undef _ACCESS
@@ -159,7 +159,7 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 	 * Returns the hashmap, or NULL on error. */
 
 	if (hashmap == NULL) return NULL;
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_resizeinthm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
@@ -178,7 +178,7 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
 
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
 	return hashmap;
 }
 
@@ -189,17 +189,17 @@ usf_data usf_inthmget(const usf_hashmap *hashmap, u64 key) {
 	 * or USFNULL (zero) if it is not accessible. */
 
 	if (hashmap == NULL) return USFNULL;
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 #define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
 	if (_ENTRY == NULL) { \
-		if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
 	if ((const void *) _ENTRY == (const void *) _HASHMAP || _ENTRY[0].u != _KEY) continue; /* Collision */ \
 	\
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return _ENTRY[1]; /* Found */
 	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
@@ -212,12 +212,12 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 	 * Returns the deleted value, or if it is not accessible */
 
 	if (hashmap == NULL) return USFNULL;
-	if (hashmap->lock) pthread_mutex_lock(hashmap->lock); /* Thread-safe lock */
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	usf_data value;
 #define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
 	if (_ENTRY == NULL) { \
-		if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
@@ -227,7 +227,7 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 	value = _ENTRY[1]; \
 	usf_free(_ENTRY); /* Free entry */ \
 	_HASHMAP->array[_HASH] = (usf_data *) _HASHMAP; /* Use hashmap pointer as deleted marker */ \
-	if (hashmap->lock) pthread_mutex_unlock(hashmap->lock); /* Thread-safe unlock */ \
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
 	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
 #undef _ACCESS
@@ -270,7 +270,7 @@ void usf_freestrhmfunc(usf_hashmap *hashmap, void (*freefunc)(void *)) {
 	}
 
 	if (hashmap->lock) {
-		pthread_mutex_destroy(hashmap->lock); /* Destroy pthread mutex in thread-safe hashmaps */
+		usf_mtxdestroy(hashmap->lock);
 		usf_free(hashmap->lock);
 	}
 	usf_free(array); /* Free underlying array */
@@ -324,7 +324,7 @@ void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *)) {
 	}
 
 	if (hashmap->lock) {
-		pthread_mutex_destroy(hashmap->lock); /* Destroy pthread mutex in thread-safe hashmaps */
+		usf_mtxdestroy(hashmap->lock);
 		usf_free(hashmap->lock);
 	}
 	usf_free(array); /* Free underlying array */
@@ -348,11 +348,10 @@ void usf_freeinthm(usf_hashmap *hashmap) {
 #define _USF_RESIZEHMFUNC(_KEYTYPE, _NAME) \
 	void usf_resize##_NAME##hm(usf_hashmap *hashmap, u64 size) { \
 		/* Resizes the underlying array of the provided hashmap to the requested size in usf_data (8 bytes).
-		 * If size is smaller than or equal to the current size, this function has no effect.
-		 * As this function is internal to usf_hashmap's implementation, it is not inherently thread-safe.
-		 * Users who still wish to call it should manually lock the mutex in that case. */ \
+		 * If size is smaller than or equal to the current size, this function has no effect. */ \
 		\
 		if (hashmap == NULL || hashmap->capacity >= size) return; /* Arguments have no effect */ \
+		if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */ \
 		\
 		usf_hashmap *newhm; \
 		newhm = usf_newhmsz(size); \
@@ -367,6 +366,8 @@ void usf_freeinthm(usf_hashmap *hashmap) {
 		USF_SWAP(hashmap->array, newhm->array); \
 		USF_SWAP(hashmap->capacity, newhm->capacity); \
 		usf_free##_NAME##hm(newhm); /* Free old data */ \
+		\
+		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	}
 _USF_RESIZEHMFUNC(char *, str)
 _USF_RESIZEHMFUNC(u64, int)

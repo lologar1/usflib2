@@ -2,8 +2,8 @@
 #define USFSKIPLIST_H
 
 #include <string.h>
-#include <pthread.h>
 #include "usfdata.h"
+#include "usfthread.h"
 
 #define USF_SKIPLIST_FRAMESIZE 24
 
@@ -14,7 +14,7 @@ typedef struct usf_skipnode {
 } usf_skipnode;
 
 typedef struct usf_skiplist {
-	pthread_mutex_t *lock;
+	usf_mutex *lock;
 	usf_skipnode *base[USF_SKIPLIST_FRAMESIZE];
 	u64 size;
 } usf_skiplist;
