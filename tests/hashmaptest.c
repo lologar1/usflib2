@@ -8,7 +8,7 @@ i32 main(void) {
 	/* usfhashmap.c test */
 
 	u64 i, r;
-	static thread_local char s[4096]; /* Used as key */
+	static thread_local char s[512]; /* Used as key */
 	usf_data *entry;
 	usf_hashmap *hashmap;
 

@@ -17,7 +17,7 @@ usf_queue *usf_newqueue_ts(void) {
 	usf_queue *queue;
 	queue = usf_malloc(sizeof(usf_queue));
 	queue->lock = usf_malloc(sizeof(usf_mutex));
-	if (usf_mtxinit(queue->lock, MTXINIT_PLAIN)) {
+	if (usf_mtxinit(queue->lock, MTXINIT_RECURSIVE)) {
 		usf_free(queue);
 		return NULL; /* mutex init failed */
 	}

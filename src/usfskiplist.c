@@ -17,7 +17,7 @@ usf_skiplist *usf_newsk_ts(void) {
 	usf_skiplist *skiplist;
 	skiplist = usf_calloc(1, sizeof(usf_skiplist));
 	skiplist->lock = usf_malloc(sizeof(usf_mutex));
-	if (usf_mtxinit(skiplist->lock, MTXINIT_PLAIN)) {
+	if (usf_mtxinit(skiplist->lock, MTXINIT_RECURSIVE)) {
 		usf_free(skiplist->lock);
 		usf_free(skiplist);
 		return NULL; /* mutex init failed */

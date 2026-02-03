@@ -59,7 +59,7 @@
 		usf_list##_NAME *list; \
 		list = usf_malloc(sizeof(usf_list##_NAME)); \
 		list->lock = usf_malloc(sizeof(usf_mutex)); \
-		if (usf_mtxinit(list->lock, MTXINIT_PLAIN)) { \
+		if (usf_mtxinit(list->lock, MTXINIT_RECURSIVE)) { \
 			usf_free(list->lock); \
 			usf_free(list); \
 			return NULL; /* mutex init failed */ \
