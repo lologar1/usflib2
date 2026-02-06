@@ -4,6 +4,10 @@
 #include <threads.h>
 #include "usfstd.h"
 
+#ifdef __STDC_NO_THREADS__
+	#error "usflib2: compiler does not provide C11 <threads.h>"
+#endif
+
 typedef thrd_t usf_thread;
 typedef mtx_t usf_mutex;
 typedef cnd_t usf_cond;

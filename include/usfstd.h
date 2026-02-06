@@ -66,7 +66,7 @@ typedef _Atomic(u16) atomic_u64;
 typedef _Atomic(f32) atomic_f32;
 typedef _Atomic(f64) atomic_f64;
 #else
-	#warning "usflib2: warning: compiler does not provide atomic types"
+	#error "usflib2: compiler does not provide atomic types"
 #endif
 
 /* libc wrappers for exact-width parsing */
