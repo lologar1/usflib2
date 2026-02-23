@@ -1,17 +1,10 @@
 #ifndef USFTHREAD_H
 #define USFTHREAD_H
 
-#include <threads.h>
-#include "usfstd.h"
-
 #ifdef __STDC_NO_THREADS__
 	#error "usflib2: compiler does not provide C11 <threads.h>"
 #endif
-
-typedef thrd_t usf_thread;
-typedef mtx_t usf_mutex;
-typedef cnd_t usf_cond;
-typedef usf_compatibility_int (*usf_threadfunc)(void *);
+#include <threads.h>
 
 #define THRD_SUCCESS thrd_success
 #define THRD_NOMEM thrd_nomem
@@ -22,6 +15,11 @@ typedef usf_compatibility_int (*usf_threadfunc)(void *);
 #define MTXINIT_TIMED mtx_timed
 #define MTXINIT_RECURSIVE (mtx_plain | mtx_recursive)
 #define MTXINIT_TIMEDRECURSIVE (mtx_timed | mtx_recursive)
+
+typedef thrd_t usf_thread;
+typedef mtx_t usf_mutex;
+typedef cnd_t usf_cond;
+typedef usf_compatibility_int (*usf_threadfunc)(void *);
 
 #define usf_thrdcreate thrd_create
 #define usf_thrdequal thrd_equal
