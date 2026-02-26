@@ -5,6 +5,7 @@
 #include "usfstd.h"
 #include "usfaesc.h"
 #include "usfmath.h"
+#include "usftime.h"
 
 i32 main(i32 nargs, char *argv[]) {
 	/* Test the usflib2 library */

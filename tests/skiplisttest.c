@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "usfskiplist.h"
 #include "usfmath.h"
+#include "usftime.h"
 
 #define TESTSZ 100000
 #define PERFSZ 100000

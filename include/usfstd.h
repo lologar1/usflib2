@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <inttypes.h>
+#include <time.h>
 
 #if (__STDC_VERSION__ < 202311L) /* C23 adds native keyword support */
 	#include <assert.h> /* static_assert */

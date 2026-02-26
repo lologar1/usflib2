@@ -23,18 +23,6 @@ u64 usf_hash(u64 val) {
 	return val;
 }
 
-f64 usf_elapsedtimes(struct timespec start, struct timespec end) {
-	/* Return time elapsed between start and end with nanosecond precision, in seconds. */
-
-	return (end.tv_sec - start.tv_sec) + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
-}
-
-f64 usf_elapsedtimens(struct timespec start, struct timespec end) {
-	/* Return time elapsed between start and end with nanosecond precision, in nanoseconds. */
-
-	return (end.tv_sec - start.tv_sec) * 1000000000.0 + (end.tv_nsec - start.tv_nsec);
-}
-
 /* Generic comparison functions */
 #define _USF_INDCMPFUNC(_TYPE) \
 	i32 usf_indcmp##_TYPE(const void *a, const void *b) { \

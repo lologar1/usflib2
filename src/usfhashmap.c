@@ -16,7 +16,8 @@ usf_hashmap *usf_newhmsz(u64 capacity) {
 	/* Creates a new usf_hashmap initialized to 0 of given capacity.
 	 * Returns the created hashmap. */
 
-	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
+	usf_hashmap *hashmap;
+	hashmap = usf_malloc(sizeof(usf_hashmap));
 	hashmap->lock = NULL; /* Not thread-safe */
     hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
 	hashmap->size = 0; /* Empty at start */
@@ -29,16 +30,15 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 	/* Creates a new thread-safe usf_hashmap initialized to 0 of given capacity.
 	 * Returns the created hashmap, or NULL if a mutex cannot be created. */
 
-	usf_hashmap *hashmap = usf_malloc(sizeof(usf_hashmap));
+	usf_hashmap *hashmap;
+	hashmap = usf_newhmsz(capacity); /* All other fields identical to non thread-safe version */
 	hashmap->lock = usf_malloc(sizeof(usf_mutex));
 	if (usf_mtxinit(hashmap->lock, MTXINIT_RECURSIVE) == THRD_ERROR) { /* Recursive in resizing */
 		usf_free(hashmap->lock);
+		usf_free(hashmap->array);
 		usf_free(hashmap);
 		return NULL; /* mutex init failed */
 	}
-    hashmap->array = usf_calloc(capacity, sizeof(usf_data *));
-	hashmap->size = 0; /* Empty at start */
-	hashmap->capacity = capacity;
 
 	return hashmap;
 }
@@ -343,6 +343,23 @@ void usf_freeinthm(usf_hashmap *hashmap) {
 	 * If hashmap is NULL, this function has no effect. */
 
 	usf_freeinthmfunc(hashmap, NULL);
+}
+
+void usf_hmclear(usf_hashmap *hashmap) {
+	/* Clears (resets) a usf_hashmap, without changing its capacity. */
+
+	if (hashmap == NULL) return;
+	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
+
+	/* Free hashmap array and reset size to 0 */
+	u64 i;
+	usf_data *entry;
+	for (i = 0; i < hashmap->capacity; i++) /* Entry needs to exist, and not be inthm sentinel */
+		if ((entry = hashmap->array[i]) && (void *) entry != (void *) hashmap) free(entry);
+	memset(hashmap->array, 0, hashmap->capacity * sizeof(usf_data *)); /* Reset to zero */
+	hashmap->size = 0;
+
+	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
 }
 
 #define _USF_RESIZEHMFUNC(_KEYTYPE, _NAME) \

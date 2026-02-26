@@ -50,8 +50,6 @@
 
 u64 usf_strhash(const char *str);
 u64 usf_hash(u64 val);
-f64 usf_elapsedtimes(struct timespec start, struct timespec end);
-f64 usf_elapsedtimens(struct timespec start, struct timespec end);
 
 /* Generic math functions */
 i32 usf_indcmpi32(const void *a, const void *b);

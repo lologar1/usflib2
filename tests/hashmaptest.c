@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "usfhashmap.h"
+#include "usftime.h"
 
 #define TESTSZ 100000
 #define PERFSZ 100000
@@ -56,9 +57,9 @@ i32 main(void) {
 		}
 	}
 	printf("hashmaptest: strhmnext OK\n");
-	usf_freestrhm(hashmap);
 
-	hashmap = usf_newhm();
+	usf_hmclear(hashmap); /* Test clearing function */
+
 	for (i = 0; i < TESTSZ; i++) usf_inthmput(hashmap, i, USFDATAU(i));
 	for (i = 0; i < TESTSZ; i++) if (usf_inthmget(hashmap, i).u != i) {
 		printf("hashmaptest: hashmap contents mismatch at %"PRIu64" while expecting %"PRIu64", aborting.\n",

@@ -37,6 +37,7 @@ void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *));
 void usf_freeinthmptr(usf_hashmap *hashmap);
 void usf_freeinthm(usf_hashmap *hashmap);
 
+void usf_hmclear(usf_hashmap *hashmap);												/* Thread-safe */
 void usf_resizestrhm(usf_hashmap *hashmap, u64 size);								/* Thread-safe */
 void usf_resizeinthm(usf_hashmap *hashmap, u64 size);								/* Thread-safe */
 

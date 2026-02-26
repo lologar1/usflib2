@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "usfqueue.h"
 #include "usfmath.h"
+#include "usftime.h"
 
 #define TESTSZ 100000
 #define PERFSZ 100000
