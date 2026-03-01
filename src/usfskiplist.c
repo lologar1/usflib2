@@ -32,21 +32,21 @@ usf_skiplist *usf_newsk_ts(void) {
  * _ACCESS		statements to execute when a match is found
  * _LEVELSHIFT	statement to execute on skiplevel shift
  *
- * _LEVEL		current skiplevel
- * _SKIPFRAME	previous skipnode's pointers to next nodes
- * _NODE		current skipnode being accessed
+ * LEVEL_		current skiplevel
+ * SKIPFRAME_	previous skipnode's pointers to next nodes
+ * NODE_		current skipnode being accessed
  * */
 
-#define _USF_SKACCESS(_SKIPLIST, _INDEX, _ACCESS, _LEVELSHIFT) \
-	i32 _LEVEL; \
-	usf_skipnode **_SKIPFRAME, *_NODE; \
-	for (_SKIPFRAME = _SKIPLIST->base, _LEVEL = USF_SKIPLIST_FRAMESIZE - 1; _LEVEL >= 0; _LEVEL--) { \
-		while ((_NODE = _SKIPFRAME[_LEVEL])) { \
-			if (_NODE->index > _INDEX) break; /* Overshot */ \
-			if (_NODE->index == _INDEX) { /* Found */ \
+#define USF_SKACCESS(_SKIPLIST, _INDEX, _ACCESS, _LEVELSHIFT) \
+	i32 LEVEL_; \
+	usf_skipnode **SKIPFRAME_, *NODE_; \
+	for (SKIPFRAME_ = _SKIPLIST->base, LEVEL_ = USF_SKIPLIST_FRAMESIZE - 1; LEVEL_ >= 0; LEVEL_--) { \
+		while ((NODE_ = SKIPFRAME_[LEVEL_])) { \
+			if (NODE_->index > _INDEX) break; /* Overshot */ \
+			if (NODE_->index == _INDEX) { /* Found */ \
 				_ACCESS(_SKIPLIST, _INDEX); \
 			} \
-			_SKIPFRAME = _NODE->nextnodes; /* Skip along */ \
+			SKIPFRAME_ = NODE_->nextnodes; /* Skip along */ \
 		} \
 		_LEVELSHIFT; \
 	}
@@ -61,18 +61,18 @@ usf_skiplist *usf_skset(usf_skiplist *skiplist, u64 i, usf_data data) {
 	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
 	usf_skipnode **skiplinks[USF_SKIPLIST_FRAMESIZE];
-#define _ACCESS(_SKIPLIST, _INDEX) \
-	_NODE->data = data; \
+#define ACCESS(_SKIPLIST, _INDEX) \
+	NODE_->data = data; \
 	if (_SKIPLIST->lock) usf_mtxunlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
 	return _SKIPLIST;
-	_USF_SKACCESS(skiplist, i, _ACCESS, skiplinks[_LEVEL] = &_SKIPFRAME[_LEVEL]);
-#undef _ACCESS
+	USF_SKACCESS(skiplist, i, ACCESS, skiplinks[LEVEL_] = &SKIPFRAME_[LEVEL_]);
+#undef ACCESS
 
-	_NODE = usf_calloc(1, sizeof(usf_skipnode));
-	_NODE->data = data; _NODE->index = i;
-	for (_LEVEL = 0; _LEVEL < USF_SKIPLIST_FRAMESIZE; _LEVEL++) {
-		_NODE->nextnodes[_LEVEL] = *skiplinks[_LEVEL]; /* Link this with next */
-		*skiplinks[_LEVEL] = _NODE; /* Link prev with this; this why we we keep extra indirection */
+	NODE_ = usf_calloc(1, sizeof(usf_skipnode));
+	NODE_->data = data; NODE_->index = i;
+	for (LEVEL_ = 0; LEVEL_ < USF_SKIPLIST_FRAMESIZE; LEVEL_++) {
+		NODE_->nextnodes[LEVEL_] = *skiplinks[LEVEL_]; /* Link this with next */
+		*skiplinks[LEVEL_] = NODE_; /* Link prev with this; this why we we keep extra indirection */
 
 		if (rand() & 1) break; /* Probabilistic upkeep */
 	}
@@ -91,17 +91,17 @@ usf_data usf_skget(const usf_skiplist *skiplist, u64 i) {
 	if (skiplist == NULL) return USFNULL;
 	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
-#define _ACCESS(_SKIPLIST, _INDEX) \
+#define ACCESS(_SKIPLIST, _INDEX) \
 	if (_SKIPLIST->lock) usf_mtxunlock(_SKIPLIST->lock); /* Thread-safe unlock */ \
-	return _NODE->data;
-	/* Note: _USF_SKACCESS discards const qualifier as it builds mutable structures for
+	return NODE_->data;
+	/* Note: USF_SKACCESS discards const qualifier as it builds mutable structures for
 	 * use in other functions (i.e. skipnode linking). That warning is disabled here
 	 * since usf_skget only queries these for traversal. */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdiscarded-qualifiers"
-	_USF_SKACCESS(skiplist, i, _ACCESS, (void) 0);
+	USF_SKACCESS(skiplist, i, ACCESS, (void) 0);
 #pragma GCC diagnostic pop
-#undef _ACCESS
+#undef ACCESS
 
 	if (skiplist->lock) usf_mtxunlock(skiplist->lock); /* Thread-safe unlock */
 	return USFNULL;
@@ -116,22 +116,22 @@ usf_data usf_skdel(usf_skiplist *skiplist, u64 i) {
 	if (skiplist == NULL) return USFNULL;
 	if (skiplist->lock) usf_mtxlock(skiplist->lock); /* Thread-safe lock */
 
-#define _ACCESS(_SKIPLIST, _INDEX) \
-	_SKIPFRAME[_LEVEL] = _NODE->nextnodes[_LEVEL]; /* Unlink */ \
+#define ACCESS(_SKIPLIST, _INDEX) \
+	SKIPFRAME_[LEVEL_] = NODE_->nextnodes[LEVEL_]; /* Unlink */ \
 	break;
-	_USF_SKACCESS(skiplist, i, _ACCESS, (void) 0);
-#undef _ACCESS
+	USF_SKACCESS(skiplist, i, ACCESS, (void) 0);
+#undef ACCESS
 
 	usf_data data;
-	if (_NODE && _NODE->index == i) { /* Found */
-		data = _NODE->data;
-		usf_free(_NODE);
+	if (NODE_ && NODE_->index == i) { /* Found */
+		data = NODE_->data;
+		usf_free(NODE_);
 	} else data = USFNULL;
 
 	if (skiplist->lock) usf_mtxunlock(skiplist->lock); /* Thread-safe unlock */
 	return data;
 }
-#undef _USF_SKACCESS
+#undef USF_SKACCESS
 
 void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *)) {
 	/* Frees a skiplist and calls freefunc on its values.

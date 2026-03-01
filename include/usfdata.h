@@ -11,14 +11,15 @@
 #define USFDATAD(_D) ((usf_data) { .f64 = (_D) })
 
 typedef union usf_data {
+	void *p;
+	void *ptr;
 	u64 u;
 	u64 u64;
 	i64 i;
 	i64 i64;
 	f64 f;
 	f64 f64;
-	void *p;
-	void *ptr;
 } usf_data;
+static_assert(sizeof(usf_data) == 8, "usflib2: usf_data type is not 8 bytes");
 
 #endif

@@ -12,6 +12,7 @@ typedef struct usf_queuenode {
 
 typedef struct usf_queue {
 	usf_mutex *lock;
+	u64 size;
 	usf_queuenode *first;
 	usf_queuenode *last;
 } usf_queue;

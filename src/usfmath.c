@@ -24,49 +24,49 @@ u64 usf_hash(u64 val) {
 }
 
 /* Generic comparison functions */
-#define _USF_INDCMPFUNC(_TYPE) \
+#define USF_INDCMPFUNC(_TYPE) \
 	i32 usf_indcmp##_TYPE(const void *a, const void *b) { \
 		_TYPE x = *((const _TYPE *) a); \
 		_TYPE y = *((const _TYPE *) b); \
 		return x > y ? 1 : x < y ? -1 : 0; \
 	}
-_USF_INDCMPFUNC(i32)
-_USF_INDCMPFUNC(i64)
-_USF_INDCMPFUNC(u32)
-_USF_INDCMPFUNC(u64)
-#undef _USF_INDCMPFUNC
+USF_INDCMPFUNC(i32)
+USF_INDCMPFUNC(i64)
+USF_INDCMPFUNC(u32)
+USF_INDCMPFUNC(u64)
+#undef USF_INDCMPFUNC
 
-#define _USF_ABSFUNC(_TYPE) \
+#define USF_ABSFUNC(_TYPE) \
 	_TYPE usf_abs##_TYPE(_TYPE a) { return a < 0 ? -a : a; }
-_USF_ABSFUNC(i32)
-_USF_ABSFUNC(i64)
-#undef _USF_ABSFUNC
+USF_ABSFUNC(i32)
+USF_ABSFUNC(i64)
+#undef USF_ABSFUNC
 
-#define _USF_MAXFUNC(_TYPE) \
+#define USF_MAXFUNC(_TYPE) \
 	_TYPE usf_max##_TYPE(_TYPE a, _TYPE b) { return a > b ? a : b; }
-_USF_MAXFUNC(i32)
-_USF_MAXFUNC(i64)
-_USF_MAXFUNC(u32)
-_USF_MAXFUNC(u64)
-#undef _USF_MAXFUNC
+USF_MAXFUNC(i32)
+USF_MAXFUNC(i64)
+USF_MAXFUNC(u32)
+USF_MAXFUNC(u64)
+#undef USF_MAXFUNC
 
-#define _USF_MINFUNC(_TYPE) \
+#define USF_MINFUNC(_TYPE) \
 	_TYPE usf_min##_TYPE(_TYPE a, _TYPE b) { return a < b ? a : b; }
-_USF_MINFUNC(i32)
-_USF_MINFUNC(i64)
-_USF_MINFUNC(u32)
-_USF_MINFUNC(u64)
-#undef _USF_MINFUNC
+USF_MINFUNC(i32)
+USF_MINFUNC(i64)
+USF_MINFUNC(u32)
+USF_MINFUNC(u64)
+#undef USF_MINFUNC
 
-#define _USF_CLAMPFUNC(_TYPE) \
+#define USF_CLAMPFUNC(_TYPE) \
 	_TYPE usf_clamp##_TYPE(_TYPE x, _TYPE low, _TYPE high) { \
 		if (low > high) USF_SWAP(low, high); \
 		return x < low ? low : (x > high ? high : x); \
 	}
-_USF_CLAMPFUNC(f32)
-_USF_CLAMPFUNC(f64)
-_USF_CLAMPFUNC(i32)
-_USF_CLAMPFUNC(i64)
-_USF_CLAMPFUNC(u32)
-_USF_CLAMPFUNC(u64)
-#undef _USF_CLAMPFUNC
+USF_CLAMPFUNC(f32)
+USF_CLAMPFUNC(f64)
+USF_CLAMPFUNC(i32)
+USF_CLAMPFUNC(i64)
+USF_CLAMPFUNC(u32)
+USF_CLAMPFUNC(u64)
+#undef USF_CLAMPFUNC

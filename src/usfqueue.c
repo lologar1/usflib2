@@ -15,13 +15,13 @@ usf_queue *usf_newqueue_ts(void) {
 	 * Returns the created queue, or NULL if a mutex cannot be created. */
 
 	usf_queue *queue;
-	queue = usf_malloc(sizeof(usf_queue));
+	queue = usf_newqueue();
 	queue->lock = usf_malloc(sizeof(usf_mutex));
 	if (usf_mtxinit(queue->lock, MTXINIT_RECURSIVE)) {
+		usf_free(queue->lock);
 		usf_free(queue);
 		return NULL; /* mutex init failed */
 	}
-	queue->first = queue->last = NULL;
 
 	return queue;
 }
@@ -46,6 +46,7 @@ usf_queue *usf_enqueue(usf_queue *queue, usf_data data) {
 		queue->last->next = enqueue; /* Append */
 		queue->last = enqueue;
 	}
+	queue->size++; /* Update size */
 
 	if (queue->lock) usf_mtxunlock(queue->lock); /* Thread-safe unlock */
 	return queue;
@@ -72,6 +73,7 @@ usf_data usf_dequeue(usf_queue *queue) {
 	if ((queue->first = dequeue->next) == NULL) /* Bring next one in */
 		queue->last = NULL; /* Dequeue was last member */
 	usf_free(dequeue);
+	queue->size--; /* Update size */
 
 	if (queue->lock) usf_mtxunlock(queue->lock); /* Thread-safe unlock */
 	return data;

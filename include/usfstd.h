@@ -16,6 +16,7 @@
 
 #define USF_EMPTY
 
+/* Limits */
 #define I8_MAX INT8_MAX
 #define I8_MIN INT8_MIN
 #define I16_MAX INT16_MAX
@@ -32,6 +33,16 @@
 #define U32_MIN 0
 #define U64_MAX UINT64_MAX
 #define U64_MIN 0
+
+/* Literals */
+#define I8 INT8_C
+#define I16 INT16_C
+#define I32 INT32_C
+#define I64 INT64_C
+#define U8 UINT8_C
+#define U16 UINT16_C
+#define U32 UINT32_C
+#define U64 UINT64_C
 
 typedef int usf_compatibility_int;
 
@@ -53,6 +64,7 @@ typedef double f64;
 static_assert(((char) -1) < 0, "usflib2: char type is not signed");
 static_assert(((u8) -1) == 255, "usflib2: negative representation is not two's complement");
 static_assert(sizeof(void *) <= sizeof(u64), "usflib2: pointer type is bigger than u64");
+static_assert(sizeof(uintptr_t) <= sizeof(u64), "usflib2: uintptr_t type is bigger than u64");
 
 /* libc wrappers for exact-width parsing */
 #define strtoi32(_NPTR, _ENDPTR, _BASE) ((i32) strtol(_NPTR, _ENDPTR, _BASE))

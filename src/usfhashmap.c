@@ -49,20 +49,20 @@ usf_hashmap *usf_newhmsz_ts(u64 capacity) {
  * _HASHFUNC	hashing function
  * _ACCESS		statements to execute for each potential entry
  *
- * _I			full 64-bit hash
- * _HASH		hashed index into underlying array
- * _CAP			hashmap capacity
- * _ENTRY		current hashmap entry being accessed
+ * I_			full 64-bit hash
+ * HASH_		hashed index into underlying array
+ * CAP_			hashmap capacity
+ * ENTRY_		current hashmap entry being accessed
  * */
-#define _USF_HMACCESS(_HASHMAP, _KEY, _HASHFUNC, _ACCESS) \
-	u64 _I, _HASH, _CAP; \
-	usf_data *_ENTRY; \
-	_CAP = _HASHMAP->capacity; \
-	_I = _HASHFUNC(_KEY); \
+#define USF_HMACCESS(_HASHMAP, _KEY, _HASHFUNC, _ACCESS) \
+	u64 I_, HASH_, CAP_; \
+	usf_data *ENTRY_; \
+	CAP_ = _HASHMAP->capacity; \
+	I_ = _HASHFUNC(_KEY); \
 	\
-	for (;; _I = usf_hash(_I)) { \
-		_HASH = _I % _CAP; \
-		_ENTRY = _HASHMAP->array[_HASH]; /* Get element */ \
+	for (;; I_ = usf_hash(I_)) { \
+		HASH_ = I_ % CAP_; \
+		ENTRY_ = _HASHMAP->array[HASH_]; /* Get element */ \
 		_ACCESS(_HASHMAP, _KEY, _HASHFUNC); \
 	}
 
@@ -79,22 +79,22 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value)
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_resizestrhm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
 
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) /* Uninitialized, deleted or matching entry */ \
-	if (_ENTRY == NULL || _ENTRY[0].p == NULL || !strcmp((char *) _ENTRY[0].p, _KEY)) { \
-		if (_ENTRY == NULL) /* Initialize entry */ \
-			_ENTRY = _HASHMAP->array[_HASH] = usf_calloc(2, sizeof(usf_data)); \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) /* Uninitialized, deleted or matching entry */ \
+	if (ENTRY_ == NULL || ENTRY_[0].p == NULL || !strcmp((char *) ENTRY_[0].p, _KEY)) { \
+		if (ENTRY_ == NULL) /* Initialize entry */ \
+			ENTRY_ = _HASHMAP->array[HASH_] = usf_calloc(2, sizeof(usf_data)); \
 		\
-		if (_ENTRY[0].p == NULL) { /* Initialize key */ \
-			_ENTRY[0] = USFDATAP(usf_malloc(strlen(_KEY) + 1)); \
-			strcpy(_ENTRY[0].p, _KEY); \
+		if (ENTRY_[0].p == NULL) { /* Initialize key */ \
+			ENTRY_[0] = USFDATAP(usf_malloc(strlen(_KEY) + 1)); \
+			strcpy(ENTRY_[0].p, _KEY); \
 			_HASHMAP->size++; \
 		} \
 		\
-		_ENTRY[1] = value; \
+		ENTRY_[1] = value; \
 		break; /* Successfully put */ \
 	}
-	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
-#undef _ACCESS
+	USF_HMACCESS(hashmap, key, usf_strhash, ACCESS);
+#undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
 	return hashmap;
@@ -109,18 +109,18 @@ usf_data usf_strhmget(const usf_hashmap *hashmap, const char *key) {
 	if (hashmap == NULL) return USFNULL;
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
-	if (_ENTRY == NULL) { \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
+	if (ENTRY_ == NULL) { \
 		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
-	if (_ENTRY[0].p == NULL || strcmp((char *) _ENTRY[0].p, _KEY)) continue; /* Collision */ \
+	if (ENTRY_[0].p == NULL || strcmp((char *) ENTRY_[0].p, _KEY)) continue; /* Collision */ \
 	\
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
-	return _ENTRY[1]; /* Found */
-	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
-#undef _ACCESS
+	return ENTRY_[1]; /* Found */
+	USF_HMACCESS(hashmap, key, usf_strhash, ACCESS);
+#undef ACCESS
 }
 
 usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
@@ -133,22 +133,22 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	usf_data value;
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
-	if (_ENTRY == NULL) { \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
+	if (ENTRY_ == NULL) { \
 		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
-	if (_ENTRY[0].p == NULL || strcmp((char *) _ENTRY[0].p, _KEY)) continue; /* Collision */ \
+	if (ENTRY_[0].p == NULL || strcmp((char *) ENTRY_[0].p, _KEY)) continue; /* Collision */ \
 	\
 	_HASHMAP->size--; \
-	value = _ENTRY[1]; \
-	usf_free(_ENTRY[0].p); /* Free key */ \
-	_ENTRY[0] = USFNULL; /* Delete entry */ \
+	value = ENTRY_[1]; \
+	usf_free(ENTRY_[0].p); /* Free key */ \
+	ENTRY_[0] = USFNULL; /* Delete entry */ \
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
-	_USF_HMACCESS(hashmap, key, usf_strhash, _ACCESS);
-#undef _ACCESS
+	USF_HMACCESS(hashmap, key, usf_strhash, ACCESS);
+#undef ACCESS
 }
 
 usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
@@ -164,19 +164,19 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_resizeinthm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
 
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) /* Uninitialized, deleted or matching entry */ \
-	if (_ENTRY == NULL || (void *) _ENTRY == (void *) _HASHMAP || _ENTRY[0].u == _KEY) { \
-		if (_ENTRY == NULL || _ENTRY == (usf_data *) _HASHMAP) { /* Empty or overwriting */ \
-			_ENTRY = _HASHMAP->array[_HASH] = usf_calloc(2, sizeof(usf_data)); \
-			_ENTRY[0] = USFDATAU(_KEY); \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) /* Uninitialized, deleted or matching entry */ \
+	if (ENTRY_ == NULL || (void *) ENTRY_ == (void *) _HASHMAP || ENTRY_[0].u == _KEY) { \
+		if (ENTRY_ == NULL || ENTRY_ == (usf_data *) _HASHMAP) { /* Empty or overwriting */ \
+			ENTRY_ = _HASHMAP->array[HASH_] = usf_calloc(2, sizeof(usf_data)); \
+			ENTRY_[0] = USFDATAU(_KEY); \
 			_HASHMAP->size++; \
 		} \
 		\
-		_ENTRY[1] = value; \
+		ENTRY_[1] = value; \
 		break; /* Successfully put */ \
 	}
-	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
-#undef _ACCESS
+	USF_HMACCESS(hashmap, key, usf_hash, ACCESS);
+#undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
 	return hashmap;
@@ -191,18 +191,18 @@ usf_data usf_inthmget(const usf_hashmap *hashmap, u64 key) {
 	if (hashmap == NULL) return USFNULL;
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
-	if (_ENTRY == NULL) { \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
+	if (ENTRY_ == NULL) { \
 		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
-	if ((const void *) _ENTRY == (const void *) _HASHMAP || _ENTRY[0].u != _KEY) continue; /* Collision */ \
+	if ((const void *) ENTRY_ == (const void *) _HASHMAP || ENTRY_[0].u != _KEY) continue; /* Collision */ \
 	\
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
-	return _ENTRY[1]; /* Found */
-	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
-#undef _ACCESS
+	return ENTRY_[1]; /* Found */
+	USF_HMACCESS(hashmap, key, usf_hash, ACCESS);
+#undef ACCESS
 }
 
 usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
@@ -215,25 +215,25 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
 
 	usf_data value;
-#define _ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
-	if (_ENTRY == NULL) { \
+#define ACCESS(_HASHMAP, _KEY, _HASHFUNC) \
+	if (ENTRY_ == NULL) { \
 		if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 		return USFNULL; /* Not present */ \
 	} \
 	\
-	if ((void *) _ENTRY == (void *) _HASHMAP || _ENTRY[0].u != _KEY) continue; /* Collision */ \
+	if ((void *) ENTRY_ == (void *) _HASHMAP || ENTRY_[0].u != _KEY) continue; /* Collision */ \
 	\
 	_HASHMAP->size--; \
-	value = _ENTRY[1]; \
-	usf_free(_ENTRY); /* Free entry */ \
-	_HASHMAP->array[_HASH] = (usf_data *) _HASHMAP; /* Use hashmap pointer as deleted marker */ \
+	value = ENTRY_[1]; \
+	usf_free(ENTRY_); /* Free entry */ \
+	_HASHMAP->array[HASH_] = (usf_data *) _HASHMAP; /* Use hashmap pointer as deleted marker */ \
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
 	return value;
-	_USF_HMACCESS(hashmap, key, usf_hash, _ACCESS);
-#undef _ACCESS
+	USF_HMACCESS(hashmap, key, usf_hash, ACCESS);
+#undef ACCESS
 }
 
-#undef _USF_HMACCESS
+#undef USF_HMACCESS
 
 usf_data *usf_strhmnext(const usf_hashmap *hashmap, u64 *iter) {
 	/* Returns the next 64-bit usf_data value in the string hashmap from underlying array index iter.
@@ -355,8 +355,10 @@ void usf_hmclear(usf_hashmap *hashmap) {
 	u64 i;
 	usf_data *entry;
 	for (i = 0; i < hashmap->capacity; i++) /* Entry needs to exist, and not be inthm sentinel */
-		if ((entry = hashmap->array[i]) && (void *) entry != (void *) hashmap) free(entry);
-	memset(hashmap->array, 0, hashmap->capacity * sizeof(usf_data *)); /* Reset to zero */
+		if ((entry = hashmap->array[i])) {
+			if ((void *) entry != (void *) hashmap) free(entry);
+			hashmap->array[i] = NULL; /* Remove */
+		}
 	hashmap->size = 0;
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */

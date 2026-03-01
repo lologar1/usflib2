@@ -11,7 +11,7 @@
 #define USF_LIST_RESIZE_MULTIPLIER 2
 
 /* Generic list declaration for multiple possible underlying types */
-#define _USF_LISTDECL(_TYPE, _NAME) \
+#define USF_LISTDECL(_TYPE, _NAME) \
 	typedef struct usf_list##_NAME { \
 		usf_mutex *lock; \
 		_TYPE *array; \
@@ -32,18 +32,18 @@
 	\
 	void usf_freelist##_NAME##func(usf_list##_NAME *list, void (*freefunc)(_TYPE)); \
 	void usf_freelist##_NAME(usf_list##_NAME *list);
-_USF_LISTDECL(i8, i8)
-_USF_LISTDECL(i16, i16)
-_USF_LISTDECL(i32, i32)
-_USF_LISTDECL(i64, i64)
-_USF_LISTDECL(u8, u8)
-_USF_LISTDECL(u16, u16)
-_USF_LISTDECL(u32, u32)
-_USF_LISTDECL(u64, u64)
-_USF_LISTDECL(f32, f32)
-_USF_LISTDECL(f64, f64)
-_USF_LISTDECL(void *, ptr)
-_USF_LISTDECL(usf_data, )
-#undef _USF_LISTDECL
+USF_LISTDECL(i8, i8)
+USF_LISTDECL(i16, i16)
+USF_LISTDECL(i32, i32)
+USF_LISTDECL(i64, i64)
+USF_LISTDECL(u8, u8)
+USF_LISTDECL(u16, u16)
+USF_LISTDECL(u32, u32)
+USF_LISTDECL(u64, u64)
+USF_LISTDECL(f32, f32)
+USF_LISTDECL(f64, f64)
+USF_LISTDECL(void *, ptr)
+USF_LISTDECL(usf_data, )
+#undef USF_LISTDECL
 
 #endif

@@ -5,19 +5,19 @@
  * _INDEX		list index being accessed
  * _DATA		underlying list data
  *
- * _RESIZESZ	new list size, in _TYPEs
+ * RESIZESZ_	new list size, in _TYPEs
  * */
 
-#define _USF_LISTRESIZE(_LIST, _INDEX, _DATA) \
-	u64 _RESIZESZ; \
+#define USF_LISTRESIZE(_LIST, _INDEX, _DATA) \
+	u64 RESIZESZ_; \
 	if (_INDEX >= _LIST->capacity) { /* Resize to either double old size, or enough to include i */ \
-		_RESIZESZ = USF_MAX(USF_LIST_RESIZE_MULTIPLIER * _LIST->capacity, _INDEX + 1); \
+		RESIZESZ_ = USF_MAX(USF_LIST_RESIZE_MULTIPLIER * _LIST->capacity, _INDEX + 1); \
 		\
-		_LIST->array = usf_realloc(_LIST->array, _RESIZESZ * sizeof(_DATA)); /* Realloc */ \
-		memset(_LIST->array + _LIST->capacity, 0, (_RESIZESZ - _LIST->capacity) * sizeof(_DATA)); \
+		_LIST->array = usf_realloc(_LIST->array, RESIZESZ_ * sizeof(_DATA)); /* Realloc */ \
+		memset(_LIST->array + _LIST->capacity, 0, (RESIZESZ_ - _LIST->capacity) * sizeof(_DATA)); \
 		\
 		_LIST->size = _INDEX + 1; \
-		_LIST->capacity = _RESIZESZ; \
+		_LIST->capacity = RESIZESZ_; \
 	} else _LIST->size = USF_MAX(_LIST->size, _INDEX + 1); /* No array resize, but list growth */
 
 /* Generic list implementation
@@ -25,7 +25,7 @@
  * _NAME		list name suffix (e.g. f32 -> usf_listf32)
  * */
 
-#define _USF_LISTIMPL(_TYPE, _NAME) \
+#define USF_LISTIMPL(_TYPE, _NAME) \
 	usf_list##_NAME *usf_newlist##_NAME(void) { \
 		/* Wrapper for creating default-sized non thread-safe lists. */ \
 		\
@@ -78,7 +78,7 @@
 		if (list == NULL) return NULL; \
 		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
-		_USF_LISTRESIZE(list, i, data); \
+		USF_LISTRESIZE(list, i, data); \
 		list->array[i] = data; \
 		\
 		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
@@ -93,7 +93,7 @@
 		if (list == NULL) return NULL; \
 		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
-		_USF_LISTRESIZE(list, USF_MAX(list->size, i), data); \
+		USF_LISTRESIZE(list, USF_MAX(list->size, i), data); \
 		if (i < list->size) \
 			memmove(&list->array[i + 1], &list->array[i], (list->size - (i + 1)) * sizeof(_TYPE)); \
 		list->array[i] = data; \
@@ -111,7 +111,7 @@
 		if (list->lock) usf_mtxlock(list->lock); /* Thread-safe lock */ \
 		\
 		u64 i; \
-		_USF_LISTRESIZE(list, (i = list->size), data); \
+		USF_LISTRESIZE(list, (i = list->size), data); \
 		list->array[i] = data; \
 		\
 		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
@@ -177,17 +177,17 @@
 		\
 		usf_freelist##_NAME##func(list, NULL); \
 	}
-_USF_LISTIMPL(i8, i8)
-_USF_LISTIMPL(i16, i16)
-_USF_LISTIMPL(i32, i32)
-_USF_LISTIMPL(i64, i64)
-_USF_LISTIMPL(u8, u8)
-_USF_LISTIMPL(u16, u16)
-_USF_LISTIMPL(u32, u32)
-_USF_LISTIMPL(u64, u64)
-_USF_LISTIMPL(f32, f32)
-_USF_LISTIMPL(f64, f64)
-_USF_LISTIMPL(void *, ptr)
-_USF_LISTIMPL(usf_data, )
-#undef _USF_LISTIMPL
-#undef _USF_LISTRESIZE
+USF_LISTIMPL(i8, i8)
+USF_LISTIMPL(i16, i16)
+USF_LISTIMPL(i32, i32)
+USF_LISTIMPL(i64, i64)
+USF_LISTIMPL(u8, u8)
+USF_LISTIMPL(u16, u16)
+USF_LISTIMPL(u32, u32)
+USF_LISTIMPL(u64, u64)
+USF_LISTIMPL(f32, f32)
+USF_LISTIMPL(f64, f64)
+USF_LISTIMPL(void *, ptr)
+USF_LISTIMPL(usf_data, )
+#undef USF_LISTIMPL
+#undef USF_LISTRESIZE
