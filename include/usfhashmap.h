@@ -9,6 +9,7 @@
 #define USF_HASHMAP_DEFAULTSIZE 16
 #define USF_HASHMAP_RESIZE_MULTIPLIER 2
 
+/* TODO: pointer hashmap functions */
 typedef struct usf_hashmap {
 	usf_mutex *lock;
 	usf_data **array; /* Hash : Value */
