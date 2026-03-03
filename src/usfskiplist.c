@@ -154,13 +154,6 @@ void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *)) {
 	usf_free(skiplist);
 }
 
-void usf_freeskptr(usf_skiplist *skiplist) {
-	/* Frees a skiplist and calls usf_free on its values.
-	 * If skiplist is NULL, this function has no effect. */
-
-	usf_freeskfunc(skiplist, usf_free);
-}
-
 void usf_freesk(usf_skiplist *skiplist) {
 	/* Frees a skiplist without freeing its values.
 	 * If skiplist is NULL, this function has no effect. */

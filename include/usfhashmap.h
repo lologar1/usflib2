@@ -28,13 +28,13 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value);			/* T
 usf_data usf_inthmget(const usf_hashmap *hashmap, u64 key);							/* Thread-safe */
 usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key);								/* Thread-safe */
 
+i32 usf_isstrhmentry(const usf_data *entry);
 usf_data *usf_strhmnext(const usf_hashmap *hashmap, u64 *iter);
 void usf_freestrhmfunc(usf_hashmap *hashmap, void (*freefunc)(void *));
-void usf_freestrhmptr(usf_hashmap *hashmap);
 void usf_freestrhm(usf_hashmap *hashmap);
+i32 usf_isinthmentry(const usf_data *entry, const usf_hashmap *hashmap);
 usf_data *usf_inthmnext(const usf_hashmap *hashmap, u64 *iter);
 void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *));
-void usf_freeinthmptr(usf_hashmap *hashmap);
 void usf_freeinthm(usf_hashmap *hashmap);
 
 void usf_hmclear(usf_hashmap *hashmap);												/* Thread-safe */

@@ -70,8 +70,17 @@ i32 main(void) {
 		exit(6);
 	}
 	printf("iotest: btof OK\niotest: ftob OK\n");
-
 	usf_free(ftobbuffer);
+
+	if (usf_fexists("USF_FILE_SHOULD_NOT_EXIST.txt")) {
+		printf("iotest: fexists fail (should be false) for file USF_FILE_SHOULD_NOT_EXIST.txt, aborting.\n");
+		exit(7);
+	}
+	if (!usf_fexists("iotest-buffer.txt")) {
+		printf("iotest: fexists fail (should be true) for file iotest-buffer.txt, aborting.\n");
+		exit(7);
+	}
+	printf("iotest: fexists OK\n");
 
 	printf("iotest: usfio OK (ALL TESTS PASSED)\n");
 	return 0;

@@ -235,6 +235,12 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 
 #undef USF_HMACCESS
 
+i32 usf_isstrhmentry(const usf_data *entry) {
+	/* Returns true if the provided string hashmap entry exists, otherwise returns false. */
+
+	return entry && entry[0].p;
+}
+
 usf_data *usf_strhmnext(const usf_hashmap *hashmap, u64 *iter) {
 	/* Returns the next 64-bit usf_data value in the string hashmap from underlying array index iter.
 	 * Then, increment iter. This functions is meant to iterate over a hashmap until iter >= capacity.
@@ -277,18 +283,17 @@ void usf_freestrhmfunc(usf_hashmap *hashmap, void (*freefunc)(void *)) {
 	usf_free(hashmap); /* Free hashmap struct */
 }
 
-void usf_freestrhmptr(usf_hashmap *hashmap) {
-	/* Frees a string usf_hashmap and calls usf_free on its values.
-	 * If hashmap is NULL, this function has no effect. */
-
-	usf_freestrhmfunc(hashmap, usf_free);
-}
-
 void usf_freestrhm(usf_hashmap *hashmap) {
 	/* Frees a string usf_hashmap without freeing its values.
 	 * If hashmap is NULL, this function has no effect. */
 
 	usf_freestrhmfunc(hashmap, NULL);
+}
+
+i32 usf_isinthmentry(const usf_data *entry, const usf_hashmap *hashmap) {
+	/* Returns true if the provided integer hashmap entry exists, otherwise returns false. */
+
+	return entry && ((const void *) entry != (const void *) hashmap);
 }
 
 usf_data *usf_inthmnext(const usf_hashmap *hashmap, u64 *iter) {
@@ -302,7 +307,7 @@ usf_data *usf_inthmnext(const usf_hashmap *hashmap, u64 *iter) {
 	do {
 		if (*iter >= hashmap->capacity) return NULL;
 		entry = hashmap->array[(*iter)++];
-	} while (entry == NULL || (const void *) entry == (const void *) hashmap);
+	} while (!usf_isinthmentry(entry, hashmap));
 
 	return entry;
 }
@@ -329,13 +334,6 @@ void usf_freeinthmfunc(usf_hashmap *hashmap, void (*freefunc)(void *)) {
 	}
 	usf_free(array); /* Free underlying array */
 	usf_free(hashmap); /* Free hashmap struct */
-}
-
-void usf_freeinthmptr(usf_hashmap *hashmap) {
-	/* Frees a string usf_hashmap and calls usf_free on its values.
-	 * If hashmap is NULL, this function has no effect. */
-
-	usf_freeinthmfunc(hashmap, usf_free);
 }
 
 void usf_freeinthm(usf_hashmap *hashmap) {

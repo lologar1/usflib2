@@ -112,7 +112,7 @@ void *usf_ftob(const char *file, u64 *size) {
 
 	void *array;
 	array = usf_malloc(filesize);
-	if (fread(array, sizeof(char), filesize, f) != filesize) { /* Failed to read */
+	if (fread(array, sizeof(u8), filesize, f) != filesize) { /* Failed to read */
 		usf_free(array);
 		fclose(f);
 		return NULL;
@@ -136,6 +136,15 @@ u64 usf_btof(const char *file, const void *pointer, u64 size) {
 	fclose(f);
 
 	return written == size ? written : 0; /* 0 if failed to write */
+}
+
+i32 usf_fexists(const char *file) {
+	/* Returns 1 if the file (opened with options "r") exists, or 0 if not. */
+
+	FILE *f;
+	if ((f = fopen(file, "r")) == NULL) return 0;
+	fclose(f); /* Close if successfully opened */
+	return 1;
 }
 
 void usf_fprinttxt(FILE *stream, char *const *text, u64 len) { /* __REVISE__ cstyle@1.8.1 */

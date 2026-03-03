@@ -6,8 +6,8 @@
 #include "usfstd.h"
 
 #define USF_SWAP(_A, _B) do { \
-	__typeof__(_A) _TMP = (_A); \
-	(_A) = (_B); (_B) = _TMP; \
+	typeof(_A) TMP_ = (_A); \
+	(_A) = (_B); (_B) = TMP_; \
 } while (0)
 
 #define USF_ABS(_A) \

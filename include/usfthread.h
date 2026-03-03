@@ -6,6 +6,14 @@
 #endif
 #include <threads.h>
 
+/* For platform-dependent code */
+#ifdef _WIN32
+	#include <windows.h>
+#else
+	#include <unistd.h>
+#endif
+#include "usfstd.h"
+
 #define THRD_SUCCESS thrd_success
 #define THRD_NOMEM thrd_nomem
 #define THRD_TIMEOUT thrd_timeout
@@ -43,5 +51,8 @@ typedef usf_compatibility_int (*usf_threadfunc)(void *);
 #define usf_cndwait cnd_wait
 #define usf_cndtimedwait cnd_timedwait
 #define usf_cnddestroy cnd_destroy
+
+u64 usf_nprocsonln(void);
+u64 usf_nprocsconf(void);
 
 #endif

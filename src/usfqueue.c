@@ -100,13 +100,6 @@ void usf_freequeuefunc(usf_queue *queue, void (*freefunc)(void *)) {
 	usf_free(queue);
 }
 
-void usf_freequeueptr(usf_queue *queue) {
-	/* Frees a usf_queue and calls usf_free on its values.
-	 * If queue is NULL, this function has no effect. */
-
-	usf_freequeuefunc(queue, usf_free);
-}
-
 void usf_freequeue(usf_queue *queue) {
 	/* Frees a usf_queue without calling usf_free on its values.
 	 * If queue is NULL, this function has no effect. */

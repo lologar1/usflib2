@@ -27,7 +27,6 @@ usf_data usf_skget(const usf_skiplist *skiplist, u64 data);				/* Thread-safe */
 usf_data usf_skdel(usf_skiplist *skiplist, u64 data);					/* Thread-safe */
 
 void usf_freeskfunc(usf_skiplist *skiplist, void (*freefunc)(void *));
-void usf_freeskptr(usf_skiplist *skiplist);
 void usf_freesk(usf_skiplist *skiplist);
 
 #endif
