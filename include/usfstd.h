@@ -66,6 +66,10 @@ static_assert(((u8) -1) == 255, "usflib2: negative representation is not two's c
 static_assert(sizeof(void *) <= sizeof(u64), "usflib2: pointer type is bigger than u64");
 static_assert(sizeof(uintptr_t) <= sizeof(u64), "usflib2: uintptr_t type is bigger than u64");
 
+#define alalloc aligned_alloc
+static_assert(alignof(f32) == alignof(u32), "usflib2: 32-bit alignment mismatch (f32, u32)");
+static_assert(alignof(f64) == alignof(u64), "usflib2: 64-bit alignment mismatch (f64, u64)");
+
 /* libc wrappers for exact-width parsing */
 #define strtoi32(_NPTR, _ENDPTR, _BASE) ((i32) strtol(_NPTR, _ENDPTR, _BASE))
 #define strtoi64(_NPTR, _ENDPTR, _BASE) ((i64) strtoll(_NPTR, _ENDPTR, _BASE))
@@ -77,6 +81,7 @@ static_assert(sizeof(uintptr_t) <= sizeof(u64), "usflib2: uintptr_t type is bigg
 #define usf_calloc calloc
 #define usf_alloca alloca
 #define usf_realloc realloc
+#define usf_alalloc aligned_alloc
 #define usf_free free
 
 #endif
