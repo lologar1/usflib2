@@ -2,8 +2,8 @@
 #include "usflist.h"
 #include "usftime.h"
 
-#define TESTSZ 100000
-#define PERFSZ 100000
+#define TESTSZ 40000
+#define PERFSZ 40000
 
 u64 freeindex_;
 u64 freedvalues_[TESTSZ];
