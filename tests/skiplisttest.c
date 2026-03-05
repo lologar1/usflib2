@@ -78,7 +78,7 @@ i32 main(void) {
 	/* PERFORMANCE TESTS */
 	printf("skiplisttest: Starting performance tests!\n");
 	struct timespec start, end;
-	double time;
+	f64 time;
 	u64 randvals[PERFSZ], cyclesz, ncycles;
 	for (i = 0; i < PERFSZ; i++) randvals[i] = usf_hash((u64) rand());
 
