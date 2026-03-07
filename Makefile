@@ -6,7 +6,7 @@ TEST_DIR := tests
 CC := gcc
 CFLAGS := -Wall -Wextra -Wunused-macros -Wcast-align -Wduplicated-branches -Wduplicated-cond \
 		  -Wformat-signedness -Wjump-misses-init -Wlogical-op -Wsign-conversion -Wcast-qual \
-		  -std=gnu2x -pedantic -O2
+		  -std=gnu2x -pedantic -O2 -g
 INCLUDES := -I$(INC_DIR)
 LINKS := -lc -lm
 

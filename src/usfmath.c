@@ -19,7 +19,6 @@ u64 usf_hash(u64 val) {
 	val *= 0xFF51AFD7ED558CCD; //Prime
 	val ^= val >> 31;
 	val *= 0xA635194A4D16E3CB; //Prime
-	val ^= val >> 27;
 	return val;
 }
 

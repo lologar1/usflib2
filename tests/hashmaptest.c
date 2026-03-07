@@ -106,7 +106,7 @@ i32 main(void) {
 	}
 
 	u64 n;
-	for (n = 0, usf_hmiterstart(hashmap, &iter); usf_hmiternext(&iter); n++) {
+	for (n = 0, usf_hmiterbegin(hashmap, &iter); usf_hmiternext(&iter); n++) {
 		if (iter.entry->flag == USF_HASHMAP_KEY_INTEGER) {
 			if (iter.entry->value.u != iter.entry->key.u + 3
 					|| (iter.entry->value.u - 3) % 9 == 0) {
@@ -136,7 +136,7 @@ i32 main(void) {
 
 	/* CONCURRENT TESTS */
 	printf("hashmaptest: Starting concurrency test!\n");
-	hashmap = usf_newhm_ts();
+	hashmap = usf_newhm_mtx();
 	u64 mapsize;
 
 #ifndef USFTEST_NO_PARALLEL
@@ -183,7 +183,7 @@ i32 main(void) {
 	printf("hashmaptest: strhmdel OK\n");
 	usf_freehm(hashmap);
 
-	hashmap = usf_newhm_ts();
+	hashmap = usf_newhm_mtx();
 #ifndef USFTEST_NO_PARALLEL
 #pragma omp parallel for
 #endif
