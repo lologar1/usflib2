@@ -136,7 +136,7 @@ i32 main(void) {
 
 	/* CONCURRENT TESTS */
 	printf("hashmaptest: Starting concurrency test!\n");
-	hashmap = usf_newhm_mtx();
+	hashmap = usf_newhm_ts();
 	u64 mapsize;
 
 #ifndef USFTEST_NO_PARALLEL
@@ -183,7 +183,7 @@ i32 main(void) {
 	printf("hashmaptest: strhmdel OK\n");
 	usf_freehm(hashmap);
 
-	hashmap = usf_newhm_mtx();
+	hashmap = usf_newhm_ts();
 #ifndef USFTEST_NO_PARALLEL
 #pragma omp parallel for
 #endif

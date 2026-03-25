@@ -6,10 +6,10 @@ usf_hashmap *usf_newhm(void) {
 	return usf_newhmsz(USF_HASHMAP_DEFAULTSIZE);
 }
 
-usf_hashmap *usf_newhm_mtx(void) {
+usf_hashmap *usf_newhm_ts(void) {
 	/* Wrapper for creating default-sized thread-blocking hashmaps. */
 
-	return usf_newhmsz_mtx(USF_HASHMAP_DEFAULTSIZE);
+	return usf_newhmsz_ts(USF_HASHMAP_DEFAULTSIZE);
 }
 
 usf_hashmap *usf_newhmsz(u64 capacity) {
@@ -19,7 +19,6 @@ usf_hashmap *usf_newhmsz(u64 capacity) {
 	usf_hashmap *hashmap;
 	hashmap = usf_malloc(sizeof(usf_hashmap));
 	hashmap->lock = NULL; /* Non-blocking */
-	usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE);
     hashmap->array = usf_calloc(capacity, sizeof(usf_hashentry));
 	hashmap->size = 0;
 	hashmap->capacity = capacity;
@@ -27,7 +26,7 @@ usf_hashmap *usf_newhmsz(u64 capacity) {
 	return hashmap;
 }
 
-usf_hashmap *usf_newhmsz_mtx(u64 capacity) {
+usf_hashmap *usf_newhmsz_ts(u64 capacity) {
 	/* Creates a new thread-blocking usf_hashmap initialized to 0 of given capacity.
 	 * Returns the created hashmap, or NULL if a mutex cannot be created. */
 
@@ -71,7 +70,6 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value)
 	if (hashmap == NULL || key == NULL) return NULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_internal_resizehm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
@@ -103,7 +101,6 @@ usf_hashmap *usf_strhmput(usf_hashmap *hashmap, const char *key, usf_data value)
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return hashmap;
 }
@@ -115,7 +112,6 @@ usf_data usf_strhmget(const usf_hashmap *hashmap, const char *key) {
 	if (hashmap == NULL || key == NULL) return USFNULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	usf_data value = USFNULL;
 #define ACCESS \
@@ -128,7 +124,6 @@ usf_data usf_strhmget(const usf_hashmap *hashmap, const char *key) {
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return value;
 }
@@ -140,7 +135,6 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 	if (hashmap == NULL || key == NULL) return USFNULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	usf_data value = USFNULL;
 #define ACCESS \
@@ -156,7 +150,6 @@ usf_data usf_strhmdel(usf_hashmap *hashmap, const char *key) {
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */ \
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return value;
 }
@@ -169,7 +162,6 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 	if (hashmap == NULL) return NULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	if (hashmap->size + 1 > hashmap->capacity / USF_HASHMAP_RESIZE_MULTIPLIER)
 		usf_internal_resizehm(hashmap, hashmap->capacity * USF_HASHMAP_RESIZE_MULTIPLIER);
@@ -200,7 +192,6 @@ usf_hashmap *usf_inthmput(usf_hashmap *hashmap, u64 key, usf_data value) {
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return hashmap;
 }
@@ -212,7 +203,6 @@ usf_data usf_inthmget(const usf_hashmap *hashmap, u64 key) {
 	if (hashmap == NULL) return USFNULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	usf_data value = USFNULL;
 #define ACCESS \
@@ -225,7 +215,6 @@ usf_data usf_inthmget(const usf_hashmap *hashmap, u64 key) {
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return value;
 }
@@ -237,7 +226,6 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 	if (hashmap == NULL) return USFNULL;
 
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 
 	usf_data value = USFNULL;
 #define ACCESS \
@@ -252,7 +240,6 @@ usf_data usf_inthmdel(usf_hashmap *hashmap, u64 key) {
 #undef ACCESS
 
 	if (hashmap->lock) usf_mtxunlock(hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 
 	return value;
 }
@@ -265,7 +252,6 @@ void usf_hmiterbegin(usf_hashmap *hashmap, usf_hashiter *iter) {
 
 	usf_hmiterskim(hashmap, iter);
 	if (hashmap->lock) usf_mtxlock(hashmap->lock); /* Thread-safe lock */
-	else while (usf_atmflagtry(&hashmap->spinlock, MEMORDER_ACQ_REL)); /* Spinlock */
 }
 
 void usf_hmiterskim(usf_hashmap *hashmap, usf_hashiter *iter) {
@@ -298,13 +284,12 @@ void usf_hmiterend(usf_hashiter *iter) {
 	 * (Note: an iterator must be ended by the same thread which initialized it) */
 
 	if (iter->hashmap->lock) usf_mtxunlock(iter->hashmap->lock); /* Thread-safe unlock */
-	else usf_atmflagclr(&iter->hashmap->spinlock, MEMORDER_RELEASE); /* Spinunlock */
 }
 
 void usf_internal_resizehm(usf_hashmap *hashmap, u64 size) {
 	/* Resizes the underlying array of the provided hashmap to the requested size in hashentries.
 	 * If size is smaller than or equal to the current size, this function has no effect.
-	 * (Note: spinlocks aren't recursive; this function is not safe when using non-blocking hashmaps! */
+	 * (Note: this function is not thread-safe when using non-blocking hashmaps! */
 	
 	if (hashmap == NULL || hashmap->capacity >= size) return; /* Arguments have no effect */
 
