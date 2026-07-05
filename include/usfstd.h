@@ -11,6 +11,8 @@
 
 #if (__STDC_VERSION__ <= 202311L) /* Standards newer than C23 implement countof */
 	#define countof(_ARRAY) (sizeof(_ARRAY)/sizeof(*_ARRAY))
+	#define alignof _Alignof
+	#define static_assert _Static_assert
 #endif
 
 #define USF_EMPTY
@@ -44,6 +46,7 @@
 #define U64 UINT64_C
 
 typedef int usf_compatibility_int;
+typedef int c_int;
 
 typedef int8_t i8;
 typedef int16_t i16;

@@ -44,7 +44,7 @@ const char *usf_sstartswith(const char *base, const char *prefix) {
 }
 
 const char *usf_sendswith(const char *base, const char *suffix) {
-	/* Returns a pointer to the first char in base before the suffix,
+	/* Returns a pointer to the first char in base that is part of the suffix,
 	 * or NULL if base does not end with suffix. */
 
 	i64 offset;

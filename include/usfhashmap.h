@@ -10,7 +10,7 @@
 #define USF_HASHMAP_DEFAULTSIZE 16
 #define USF_HASHMAP_RESIZE_MULTIPLIER 2
 
-typedef enum usf_hashflag : u8 {
+typedef enum usf_hashflag {
 	USF_HASHMAP_UNINITIALIZED,
 	USF_HASHMAP_SENTINEL,
 	USF_HASHMAP_KEY_INTEGER,
