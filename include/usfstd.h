@@ -7,6 +7,7 @@
 #if (__STDC_VERSION__ < 202311L) /* C23 adds native keyword support */
 	#include <assert.h> /* static_assert */
 	#include <threads.h> /* thread_local */
+	#define unreachable(...) do { printf("unreachable() reached\n"); exit(1); } while (0);
 #endif
 
 #if (__STDC_VERSION__ <= 202311L) /* Standards newer than C23 implement countof */
