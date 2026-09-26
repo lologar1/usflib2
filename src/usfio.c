@@ -2,7 +2,7 @@
 
 char *usf_ftos(const char *file, u64 *l) {
 	/* Reads a file with options "r" and returns the content as a single
-	 * 0-terminated string of length l, or NULL if an error occurred. */
+	 * 0-terminated string of length l (excluding terminator), or NULL if an error occurred. */
 
 	FILE *f;
 	if ((f = fopen(file, "r")) == NULL) return NULL; /* Failed to open */

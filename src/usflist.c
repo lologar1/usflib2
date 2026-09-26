@@ -131,6 +131,13 @@
 		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return data; \
 	} \
+	_TYPE usf_list##_NAME##peek(const usf_list##_NAME *list) { \
+		/* Returns the data for last element in list, or zero if it is inaccessible.
+		   Equivalent to get at index size - 1. */ \
+		\
+		if (list == NULL) return (_TYPE) {0}; \
+		return usf_list##_NAME##get(list, list->size - 1); \
+	} \
 	\
 	_TYPE usf_list##_NAME##del(usf_list##_NAME *list, u64 i) { \
 		/* Deletes the element at index i in the given list, while maintaining contiguity.
@@ -150,6 +157,13 @@
 		\
 		if (list->lock) usf_mtxunlock(list->lock); /* Thread-safe unlock */ \
 		return data; \
+	} \
+	_TYPE usf_list##_NAME##pop(usf_list##_NAME *list) { \
+		/* Deletes the last element in the given list, equivalent to del with index size - 1.
+		   Returns the deleted value, or zero if it is inaccessible. */ \
+		\
+		if (list == NULL) return (_TYPE) {0}; \
+		return usf_list##_NAME##del(list, list->size - 1); \
 	} \
 	\
 	void usf_freelist##_NAME##func(usf_list##_NAME *list, void (*freefunc)(_TYPE)) { \

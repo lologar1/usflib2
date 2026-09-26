@@ -28,7 +28,9 @@
 	usf_list##_NAME *usf_list##_NAME##ins(usf_list##_NAME *list, u64 i, _TYPE data);	/* Thread-safe */ \
 	usf_list##_NAME *usf_list##_NAME##add(usf_list##_NAME *list, _TYPE data);			/* Thread-safe */ \
 	_TYPE usf_list##_NAME##get(const usf_list##_NAME *list, u64 i);						/* Thread-safe */ \
+	_TYPE usf_list##_NAME##peek(const usf_list##_NAME *list);							/* Thread-safe */ \
 	_TYPE usf_list##_NAME##del(usf_list##_NAME *list, u64 i);							/* Thread-safe */ \
+	_TYPE usf_list##_NAME##pop(usf_list##_NAME *list);									/* Thread-safe */ \
 	\
 	void usf_freelist##_NAME##func(usf_list##_NAME *list, void (*freefunc)(_TYPE)); \
 	void usf_freelist##_NAME(usf_list##_NAME *list);
